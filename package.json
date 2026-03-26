@@ -1,0 +1,9 @@
+{
+  "name": "ivd-transcript-tool",
+  "version": "1.0.0",
+  "description": "IVD Transcript Cleaning & Notes Tool — docx assembly",
+  "private": true,
+  "dependencies": {
+    "docx": "^9.0.0"
+  }
+}

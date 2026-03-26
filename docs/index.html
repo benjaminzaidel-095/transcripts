@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IVD Transcript Tool — DeciBio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="brand">DeciBio</span>
+      <span class="project-tag">IVD Sequencing Landscape</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="card">
+      <h1 class="card-title">Transcript Cleaning Tool</h1>
+      <p class="card-subtitle">
+        Upload a raw Granola export and fill in interview details to generate a
+        cleaned, formatted Word document with structured notes.
+      </p>
+
+      <form id="transcriptForm" novalidate>
+
+        <!-- Transcript file -->
+        <div class="field-group">
+          <label for="transcriptFile" class="label">
+            Transcript File <span class="required">*</span>
+          </label>
+          <div class="file-drop" id="fileDrop">
+            <input type="file" id="transcriptFile" accept=".txt" class="file-input" />
+            <div class="file-drop-label" id="fileDropLabel">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
+                <path d="M3 14v1.5A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5V14"/>
+              </svg>
+              <span>Drop .txt file here or <span class="link">browse</span></span>
+            </div>
+          </div>
+          <p class="hint">Granola .txt export (timestamped dialogue)</p>
+        </div>
+
+        <!-- Two-column row: Role + Setting -->
+        <div class="field-row">
+          <div class="field-group">
+            <label for="role" class="label">
+              Interviewee Role <span class="required">*</span>
+            </label>
+            <input type="text" id="role" name="role" class="input"
+                   placeholder="e.g. Lab Director" autocomplete="off" />
+          </div>
+          <div class="field-group">
+            <label for="setting" class="label">
+              Setting <span class="required">*</span>
+            </label>
+            <input type="text" id="setting" name="setting" class="input"
+                   placeholder="e.g. Core Lab, AMC" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Two-column row: Location + Date -->
+        <div class="field-row">
+          <div class="field-group">
+            <label for="location" class="label">
+              Location <span class="required">*</span>
+            </label>
+            <input type="text" id="location" name="location" class="input"
+                   placeholder="e.g. US" autocomplete="off" />
+          </div>
+          <div class="field-group">
+            <label for="interviewDate" class="label">Interview Date</label>
+            <input type="date" id="interviewDate" name="interviewDate" class="input" />
+          </div>
+        </div>
+
+        <!-- Interview number -->
+        <div class="field-group field-group--narrow">
+          <label for="interviewNum" class="label">Interview Number</label>
+          <input type="text" id="interviewNum" name="interviewNum" class="input"
+                 placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
+        </div>
+
+        <!-- Submit -->
+        <div class="actions">
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="btn-text">Generate Transcript</span>
+            <span class="btn-spinner" hidden>
+              <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+              Processing…
+            </span>
+          </button>
+        </div>
+
+        <!-- Status / error messages -->
+        <div id="statusBox" class="status-box" hidden></div>
+
+      </form>
+    </div>
+
+    <!-- CLI equivalent panel -->
+    <div class="card card--secondary" id="cliPanel" hidden>
+      <h2 class="cli-title">CLI Command</h2>
+      <p class="cli-desc">Run this command locally (requires API key):</p>
+      <pre class="cli-block" id="cliBlock"></pre>
+      <button class="btn-copy" id="copyBtn" onclick="copyCmd()">Copy</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span>DeciBio &copy; 2026 &mdash; IVD Sequencing Landscape</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

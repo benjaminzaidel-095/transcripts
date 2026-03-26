@@ -1,0 +1,22 @@
+{
+  "header": {
+    "date": "March 26, 2026",
+    "role": "Lab Director",
+    "setting": "Core Lab, AMC",
+    "location": "US"
+  },
+  "transcript": [
+    {"speaker": "DeciBio Moderator", "text": "Thank you for joining us today. Can you tell me about your lab's current sequencing setup?"},
+    {"speaker": "Stakeholder", "text": "We're running mostly Illumina. We have the NovaSeq 6000 and a couple of MiSeqs for smaller runs. We do a lot of oncology panels, solid tumor primarily."},
+    {"speaker": "DeciBio Moderator", "text": "How do you handle reimbursement for these panels?"},
+    {"speaker": "Stakeholder", "text": "We bill under CPT 81445 for solid tumor and 81455 for the larger panels. United and Cigna both require prior auth now, which has been challenging."}
+  ],
+  "notes": {
+    "Key Themes": ["Lab runs Illumina NovaSeq 6000 and MiSeq instruments for oncology panels", "Prior authorization requirements from major payers are a significant operational burden"],
+    "Notable Quotes": ["\"United and Cigna both require prior auth now, which has been challenging.\" — Stakeholder"],
+    "IVD Platform & Competitive Landscape": ["Primary platform: Illumina NovaSeq 6000 for high-throughput runs", "MiSeq used for smaller, lower-volume testing"],
+    "Workflow & Utilization Patterns": ["Focus on solid tumor oncology panels"],
+    "Reimbursement & Coding": ["CPT 81445 for solid tumor panels", "CPT 81455 for larger panel configurations", "Prior auth required by United and Cigna"],
+    "Forward-Looking Signals": ["No forward-looking signals captured in this excerpt"]
+  }
+}

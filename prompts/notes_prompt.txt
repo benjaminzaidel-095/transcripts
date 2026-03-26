@@ -1,0 +1,36 @@
+You are a senior analyst at a life sciences consulting firm. You have just conducted the following expert interview as part of an IVD Sequencing Landscape study for Roche Group.
+
+Generate structured interview notes from this transcript. For each section, provide analytical bullet points AND include the best supporting direct quotes from the transcript immediately after the bullet they support. Use ellipses (...) to connect or trim longer quotes. Attribute all quotes as "— Stakeholder".
+
+Include the following sections:
+1. Key Themes (3–5 bullet points summarizing the most important takeaways)
+2. Notable Quotes (2–4 especially insightful verbatim quotes — no bullet needed, just the quotes)
+3. IVD Platform & Competitive Landscape (what platforms they use, how decisions are made, vendor relationships)
+4. Workflow & Utilization Patterns (testing algorithms, patient routing, reflex logic, utilization controls)
+5. Reimbursement & Coding (CPT/ICD-10 approach, payer challenges, coding strategy)
+6. Forward-Looking Signals (anticipated platform changes, purchasing intent, unmet needs)
+
+Format rules:
+- Analytical bullets: start with •
+- Supporting quotes: start with " (opening quotation mark), on the line immediately after the bullet they support, indented with two spaces. End with  — Stakeholder
+- Only include what is supported by the transcript. Do not invent or extrapolate.
+
+Example format:
+Key Themes
+• Lab is shifting from broad panels to targeted assays due to payer pressure.
+  "We've had to narrow our menu... payers just won't cover the 500-gene panel anymore" — Stakeholder
+• CPT coding strategy is increasingly driving platform selection decisions.
+  "If we can't get reimbursed for it, we don't buy it... the NovaSeq just doesn't pencil out" — Stakeholder
+
+Notable Quotes
+  "The biggest challenge isn't the technology... it's getting paid for it" — Stakeholder
+  "Illumina has been our primary vendor for eight years... we're not switching unless something dramatic changes" — Stakeholder
+
+IVD Platform & Competitive Landscape
+• [bullet]
+  "[supporting quote]" — Stakeholder
+
+[continue for all sections]
+
+CLEANED TRANSCRIPT:
+{cleaned_transcript}
