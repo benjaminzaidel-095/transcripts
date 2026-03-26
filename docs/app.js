@@ -1,29 +1,39 @@
 /**
  * IVD Transcript Tool — frontend logic
  *
- * API_ENDPOINT: Render backend URL. Set after deploying server.py to Render.
- * While empty, the form builds and shows the equivalent CLI command instead.
+ * API_ENDPOINT: Render backend URL.
+ * While empty the form shows the CLI equivalent instead.
  */
 const API_ENDPOINT = "https://transcripts-f993.onrender.com/process";
+const WAKE_URL     = API_ENDPOINT.replace("/process", "/");
+
+// ── Wake up Render on page load (free tier cold-starts in ~30-60s) ────────────
+if (API_ENDPOINT) {
+  fetch(WAKE_URL, { method: "GET" }).catch(() => {});
+}
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const form           = document.getElementById("transcriptForm");
-const fileInput      = document.getElementById("transcriptFile");
-const fileDrop       = document.getElementById("fileDrop");
-const fileLabel      = document.getElementById("fileDropLabel");
-const pasteArea      = document.getElementById("transcriptText");
-const submitBtn      = document.getElementById("submitBtn");
-const btnText        = submitBtn.querySelector(".btn-text");
-const btnSpinner     = submitBtn.querySelector(".btn-spinner");
-const statusBox      = document.getElementById("statusBox");
-const cliPanel       = document.getElementById("cliPanel");
-const cliBlock       = document.getElementById("cliBlock");
+const form            = document.getElementById("transcriptForm");
+const fileInput       = document.getElementById("transcriptFile");
+const fileDrop        = document.getElementById("fileDrop");
+const fileLabel       = document.getElementById("fileDropLabel");
+const pasteArea       = document.getElementById("transcriptText");
+const submitBtn       = document.getElementById("submitBtn");
+const btnText         = submitBtn.querySelector(".btn-text");
+const btnSpinner      = submitBtn.querySelector(".btn-spinner");
+const stageLabel      = document.getElementById("stageLabel");
+const statusBox       = document.getElementById("statusBox");
+const cliPanel        = document.getElementById("cliPanel");
+const cliBlock        = document.getElementById("cliBlock");
+const downloadPanel   = document.getElementById("downloadPanel");
+const dlTranscript    = document.getElementById("dlTranscript");
+const dlNotes         = document.getElementById("dlNotes");
 
 // CSV / interviewee refs
-const csvDrop        = document.getElementById("csvDrop");
-const csvFileInput   = document.getElementById("csvFile");
-const csvDropLabel   = document.getElementById("csvDropLabel");
-const intervieweeGroup = document.getElementById("intervieweeGroup");
+const csvDrop           = document.getElementById("csvDrop");
+const csvFileInput      = document.getElementById("csvFile");
+const csvDropLabel      = document.getElementById("csvDropLabel");
+const intervieweeGroup  = document.getElementById("intervieweeGroup");
 const intervieweeSelect = document.getElementById("intervieweeSelect");
 
 // Auto-fillable fields
@@ -127,7 +137,6 @@ function splitCSVLine(line) {
 
 // ── Interviewee dropdown ──────────────────────────────────────────────────────
 function populateIntervieweeDropdown(contacts) {
-  // Reset
   intervieweeSelect.innerHTML = '<option value="">— choose interviewee —</option>';
 
   contacts.forEach((c, idx) => {
@@ -143,7 +152,6 @@ function populateIntervieweeDropdown(contacts) {
     intervieweeSelect.appendChild(opt);
   });
 
-  // Separator + Other option
   const sep = document.createElement("option");
   sep.disabled = true;
   sep.textContent = "──────────────────────";
@@ -156,21 +164,15 @@ function populateIntervieweeDropdown(contacts) {
   intervieweeSelect.appendChild(other);
 
   intervieweeGroup.hidden = false;
-
-  // Store contacts on the select element for access in handler
   intervieweeSelect._contacts = contacts;
 }
 
 intervieweeSelect.addEventListener("change", () => {
   const val = intervieweeSelect.value;
-  if (val === "other" || val === "") {
-    clearAutofill();
-    return;
-  }
+  if (val === "other" || val === "") { clearAutofill(); return; }
   const contacts = intervieweeSelect._contacts || [];
   const c = contacts[parseInt(val, 10)];
   if (!c) return;
-
   const ivNum = (c["IV#"] || "").trim();
   setAutofill("interviewNum", ivNum ? "IV" + ivNum : "");
   setAutofill("role",         (c["Role"] || "").trim());
@@ -184,7 +186,6 @@ function setAutofill(id, value) {
   if (!el) return;
   el.value = value;
   el.classList.add("input--autofilled");
-  // Remove autofill indicator on manual edit
   el.addEventListener("input", () => el.classList.remove("input--autofilled"), { once: true });
 }
 
@@ -201,15 +202,34 @@ function clearAutofill() {
 function normalizeDate(str) {
   if (!str) return "";
   str = str.trim();
-  // Already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  // MM/DD/YYYY or M/D/YYYY
   const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) return `${m[3]}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
-  // Try browser Date parsing as last resort
   const d = new Date(str);
   if (!isNaN(d)) return d.toISOString().slice(0, 10);
   return "";
+}
+
+// ── Progress stage labels ─────────────────────────────────────────────────────
+// Rough timing based on typical transcript length (haiku cleaning ~15s, sonnet notes ~40s)
+const STAGES = [
+  [0,     "Cleaning transcript…"],
+  [20000, "Generating notes…"],
+  [60000, "Building document…"],
+];
+let stageTimers = [];
+
+function startStages() {
+  stageTimers.forEach(clearTimeout);
+  stageTimers = [];
+  STAGES.forEach(([ms, label]) => {
+    stageTimers.push(setTimeout(() => { if (stageLabel) stageLabel.textContent = label; }, ms));
+  });
+}
+
+function stopStages() {
+  stageTimers.forEach(clearTimeout);
+  stageTimers = [];
 }
 
 // ── Form submit ───────────────────────────────────────────────────────────────
@@ -224,18 +244,17 @@ form.addEventListener("submit", async e => {
   const date      = val("interviewDate");
   const num       = val("interviewNum");
 
-  // Validation
-  if (!file && !pasteText) return showStatus("Please upload a .txt file or paste transcript text.", "error");
+  if (!file && !pasteText) return showStatus("Please upload a file or paste transcript text.", "error");
   if (!role)     return showStatus("Interviewee Role is required.", "error");
   if (!setting)  return showStatus("Setting is required.", "error");
   if (!location) return showStatus("Location is required.", "error");
 
   setLoading(true);
   hideStatus();
+  downloadPanel.hidden = true;
   cliPanel.hidden = true;
 
   if (API_ENDPOINT) {
-    // ── Live API mode ────────────────────────────────────────────────────────
     const fd = new FormData();
     if (file) {
       fd.append("transcript", file);
@@ -248,25 +267,35 @@ form.addEventListener("submit", async e => {
     if (date) fd.append("date", date);
     if (num)  fd.append("interview_num", num);
 
+    startStages();
     try {
       const res = await fetch(API_ENDPOINT, { method: "POST", body: fd });
       if (!res.ok) {
         const msg = await res.text().catch(() => res.statusText);
         throw new Error(msg || `HTTP ${res.status}`);
       }
-      const blob = await res.blob();
-      const filename = extractFilename(res) || `${num || "IV"}_Cleaned.docx`;
-      downloadBlob(blob, filename);
-      showStatus(`✓ Done — ${filename} downloaded.`, "success");
+      const data = await res.json();
+
+      // Wire up the two download buttons
+      dlTranscript.onclick = () =>
+        downloadB64(data.transcript_b64, data.transcript_filename, "text/plain");
+      dlNotes.onclick = () =>
+        downloadB64(data.notes_b64, data.notes_filename,
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+      downloadPanel.hidden = false;
+      showStatus("✓ Processing complete — your files are ready below.", "success");
     } catch (err) {
       showStatus(`Error: ${err.message}`, "error");
+    } finally {
+      stopStages();
     }
 
   } else {
-    // ── CLI fallback mode ────────────────────────────────────────────────────
-    const src       = file ? file.name : "pasted_transcript.txt";
-    const dateFlag  = date ? `  --date "${date}"` : "";
-    const numFlag   = num  ? `  --interview-num "${num}"` : "";
+    // ── CLI fallback ──────────────────────────────────────────────────────────
+    const src      = file ? file.name : "pasted_transcript.txt";
+    const dateFlag = date ? `  --date "${date}"` : "";
+    const numFlag  = num  ? `  --interview-num "${num}"` : "";
     const cmd = [
       `python ivd_clean.py \\`,
       `  --transcript "${src}" \\`,
@@ -276,7 +305,6 @@ form.addEventListener("submit", async e => {
       dateFlag ? (numFlag ? dateFlag + " \\" : dateFlag) : null,
       numFlag  ? numFlag : null,
     ].filter(l => l !== null).join("\n");
-
     cliBlock.textContent = cmd;
     cliPanel.hidden = false;
     showStatus("API not configured yet — copy the command below to run locally.", "info");
@@ -293,6 +321,7 @@ function setLoading(on) {
   submitBtn.disabled = on;
   btnText.hidden     = on;
   btnSpinner.hidden  = !on;
+  if (on && stageLabel) stageLabel.textContent = STAGES[0][1];
 }
 
 function showStatus(msg, type = "info") {
@@ -306,19 +335,15 @@ function hideStatus() {
   statusBox.className = "status-box";
 }
 
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a   = Object.assign(document.createElement("a"), { href: url, download: filename });
+function downloadB64(b64, filename, mimeType) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const blob  = new Blob([bytes], { type: mimeType });
+  const url   = URL.createObjectURL(blob);
+  const a     = Object.assign(document.createElement("a"), { href: url, download: filename });
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-}
-
-function extractFilename(res) {
-  const cd = res.headers.get("Content-Disposition") || "";
-  const m  = cd.match(/filename="?([^";\n]+)"?/);
-  return m ? m[1] : null;
 }
 
 function copyCmd() {

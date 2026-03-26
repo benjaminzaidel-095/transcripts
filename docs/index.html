@@ -117,7 +117,7 @@
               <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
               </svg>
-              Processing…
+              <span id="stageLabel">Cleaning transcript…</span>
             </span>
           </button>
         </div>
@@ -125,6 +125,27 @@
         <div id="statusBox" class="status-box" hidden></div>
 
       </form>
+    </div>
+
+    <!-- ── Download results panel ──────────────────────────────────────── -->
+    <div class="card card--downloads" id="downloadPanel" hidden>
+      <p class="download-heading">Ready to download</p>
+      <div class="download-row">
+        <button class="btn-download" id="dlTranscript">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 3v10M10 13l-3.5-3.5M10 13l3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 15.5h14" stroke-linecap="round"/>
+          </svg>
+          Cleaned Transcript&nbsp;<span class="btn-download-ext">.txt</span>
+        </button>
+        <button class="btn-download btn-download--primary" id="dlNotes">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 3v10M10 13l-3.5-3.5M10 13l3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 15.5h14" stroke-linecap="round"/>
+          </svg>
+          Notes Document&nbsp;<span class="btn-download-ext">.docx</span>
+        </button>
+      </div>
     </div>
 
     <!-- CLI equivalent panel -->

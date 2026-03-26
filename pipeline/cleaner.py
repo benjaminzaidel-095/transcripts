@@ -37,7 +37,7 @@ def _clean_with_claude(prompt: str) -> str:
 
     client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
     message = client.messages.create(
-        model=config.NOTES_MODEL,  # reuse same model for cleaning when using Claude
+        model=config.HAIKU_MODEL,  # faster + cheaper for mechanical cleaning step
         max_tokens=8192,
         messages=[{"role": "user", "content": prompt}],
     )

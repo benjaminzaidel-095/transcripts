@@ -368,6 +368,68 @@ body {
 
 .textarea-input::placeholder { color: var(--grey-300); }
 
+/* ── Download panel ──────────────────────────────────────────────────────── */
+.card--downloads {
+  border-color: #a3d9b8;
+  background: #f0faf4;
+}
+
+.download-heading {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 1rem;
+}
+
+.download-row {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  height: 40px;
+  padding: 0 1.25rem;
+  border: 1.5px solid var(--grey-300);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--grey-700);
+  font-family: var(--font);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+
+.btn-download:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-light);
+}
+
+.btn-download--primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.btn-download--primary:hover {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: #fff;
+}
+
+.btn-download-ext {
+  font-weight: 400;
+  opacity: .7;
+  font-size: .78rem;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 .site-footer {
   text-align: center;

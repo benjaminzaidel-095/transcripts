@@ -3,6 +3,8 @@ IVD Transcript Tool — FastAPI backend
 Deploy to Render (free tier) or run locally with: uvicorn server:app --reload
 """
 
+import asyncio
+import base64
 import re
 import tempfile
 from datetime import date, datetime
@@ -11,7 +13,7 @@ from sys import platform
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse
 
 import config
 from pipeline.cleaner import clean_transcript
@@ -31,6 +33,7 @@ app.add_middleware(
 
 @app.get("/")
 def health():
+    """Wake-up ping — frontend calls this on page load to warm Render."""
     return {"status": "ok"}
 
 
@@ -50,21 +53,20 @@ async def process_transcript(
     try:
         raw_text = raw_bytes.decode("utf-8")
     except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Transcript file must be UTF-8 encoded text.")
+        raise HTTPException(status_code=400, detail="Transcript must be UTF-8 encoded text.")
 
-    # Clean
+    # Run both Claude calls in threads so the event loop isn't blocked
     try:
-        cleaned = clean_transcript(raw_text)
+        cleaned = await asyncio.to_thread(clean_transcript, raw_text)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Cleaning step failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Cleaning failed: {e}")
 
-    # Notes
     try:
-        notes = generate_notes(cleaned)
+        notes = await asyncio.to_thread(generate_notes, cleaned)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Notes step failed: {e}")
+        raise HTTPException(status_code=502, detail=f"Notes generation failed: {e}")
 
-    # Build docx into a temp file, read bytes into memory, then delete
+    # Format metadata
     interview_date = _format_date(date) if date else _today()
     num = interview_num.strip() if interview_num.strip() else "IV"
 
@@ -79,21 +81,23 @@ async def process_transcript(
         "notes": notes,
     }
 
+    # Build docx, read into memory, clean up temp file
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         out_path = Path(tmp.name)
 
     try:
-        build_docx(payload, out_path)
+        await asyncio.to_thread(build_docx, payload, out_path)
         docx_bytes = out_path.read_bytes()
     finally:
         out_path.unlink(missing_ok=True)
 
-    filename = f"{num}_Cleaned.docx"
-    return Response(
-        content=docx_bytes,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    # Return both files as base64 JSON so the browser can offer two download buttons
+    return JSONResponse({
+        "transcript_filename": f"{num}_Cleaned.txt",
+        "transcript_b64": base64.b64encode(cleaned.encode("utf-8")).decode("ascii"),
+        "notes_filename": f"{num}_Notes.docx",
+        "notes_b64": base64.b64encode(docx_bytes).decode("ascii"),
+    })
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
