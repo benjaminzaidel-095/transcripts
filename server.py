@@ -3,6 +3,7 @@ IVD Transcript Tool — FastAPI backend
 Deploy to Render (free tier) or run locally with: uvicorn server:app --reload
 """
 
+import re
 import tempfile
 from datetime import date, datetime
 from pathlib import Path
@@ -10,7 +11,7 @@ from sys import platform
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 
 import config
 from pipeline.cleaner import clean_transcript
@@ -21,9 +22,10 @@ app = FastAPI(title="IVD Transcript Tool", docs_url=None, redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # lock this down to your GitHub Pages URL once deployed
-    allow_methods=["POST", "OPTIONS"],
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 
@@ -62,13 +64,10 @@ async def process_transcript(
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Notes step failed: {e}")
 
-    # Format date
+    # Build docx into a temp file, read bytes into memory, then delete
     interview_date = _format_date(date) if date else _today()
-
-    # Determine interview number
     num = interview_num.strip() if interview_num.strip() else "IV"
 
-    # Build docx into a temp file
     payload = {
         "header": {
             "date": interview_date,
@@ -83,21 +82,21 @@ async def process_transcript(
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         out_path = Path(tmp.name)
 
-    build_docx(payload, out_path)
+    try:
+        build_docx(payload, out_path)
+        docx_bytes = out_path.read_bytes()
+    finally:
+        out_path.unlink(missing_ok=True)
 
     filename = f"{num}_Cleaned.docx"
-    return FileResponse(
-        path=str(out_path),
+    return Response(
+        content=docx_bytes,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=filename,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-        background=_cleanup(out_path),
     )
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
-
-import re
 
 def _parse_cleaned_turns(cleaned_text: str) -> list[dict]:
     turns, current_speaker, current_lines = [], None, []
@@ -129,20 +128,9 @@ def _format_date(raw: str) -> str:
             return dt.strftime("%B %#d, %Y") if platform == "win32" else dt.strftime("%B %-d, %Y")
         except ValueError:
             continue
-    return raw  # return as-is if unparseable
+    return raw
 
 
 def _today() -> str:
     d = date.today()
     return d.strftime("%B %#d, %Y") if platform == "win32" else d.strftime("%B %-d, %Y")
-
-
-from starlette.background import BackgroundTask
-
-def _cleanup(path: Path) -> BackgroundTask:
-    def _del():
-        try:
-            path.unlink(missing_ok=True)
-        except Exception:
-            pass
-    return BackgroundTask(_del)
