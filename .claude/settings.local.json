@@ -17,7 +17,11 @@
       "Bash(PYTHONUTF8=1 python scripts/validate.py output/IV1_template_test.docx)",
       "Read(//c/Users/BenjaminZaidel/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/60148888-df0f-4677-ae10-56b079e082f2/98116398-c268-4789-98d8-9eedc2800f95/skills/docx/**)",
       "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\BenjaminZaidel\\\\Downloads\\\\IV2_Cleaned \\(1\\).docx\" -o output.md)",
-      "Bash(python scripts/office/unpack.py \"C:/Users/BenjaminZaidel/Downloads/IV2_Cleaned \\(1\\).docx\" unpacked_iv2/)"
+      "Bash(python scripts/office/unpack.py \"C:/Users/BenjaminZaidel/Downloads/IV2_Cleaned \\(1\\).docx\" unpacked_iv2/)",
+      "Bash(python3 -c \"import fastapi, uvicorn\")",
+      "Bash(python -c \"import fastapi, uvicorn\")",
+      "Bash(python -c \"import server; print\\(''OK''\\)\")",
+      "Bash(python -m pip install python-multipart --quiet)"
     ]
   }
 }

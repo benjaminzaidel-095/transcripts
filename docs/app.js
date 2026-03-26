@@ -1,10 +1,10 @@
 /**
  * IVD Transcript Tool — frontend logic
  *
- * API_ENDPOINT: set to your backend URL once deployed.
+ * API_ENDPOINT: Render backend URL. Set after deploying server.py to Render.
  * While empty, the form builds and shows the equivalent CLI command instead.
  */
-const API_ENDPOINT = "";   // e.g. "https://your-backend.com/process"
+const API_ENDPOINT = "";   // TODO: paste your Render URL here, e.g. "https://ivd-transcript-tool.onrender.com/process"
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const form        = document.getElementById("transcriptForm");
