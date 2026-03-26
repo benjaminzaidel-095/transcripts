@@ -13,7 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 import config
-from pipeline.parser import parse_transcript, turns_to_text
 from pipeline.cleaner import clean_transcript
 from pipeline.notes import generate_notes
 from pipeline.docx_builder import build_docx
@@ -51,14 +50,9 @@ async def process_transcript(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Transcript file must be UTF-8 encoded text.")
 
-    # Parse
-    turns = parse_transcript(raw_text)
-    if not turns:
-        raise HTTPException(status_code=400, detail="No dialogue turns found. Check transcript format.")
-
     # Clean
     try:
-        cleaned = clean_transcript(turns_to_text(turns))
+        cleaned = clean_transcript(raw_text)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Cleaning step failed: {e}")
 

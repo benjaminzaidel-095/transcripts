@@ -43,10 +43,6 @@ fileInput.addEventListener("change", () => {
 });
 
 function setTranscriptFile(file) {
-  if (!file.name.endsWith(".txt")) {
-    showStatus("Please upload a .txt file (Granola export).", "error");
-    return;
-  }
   fileDrop.classList.add("has-file");
   fileLabel.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
