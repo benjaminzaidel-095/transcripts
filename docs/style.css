@@ -2,20 +2,21 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --blue:      #156082;
-  --blue-dark: #0e4a63;
-  --blue-light:#e8f1f5;
-  --grey-50:   #f7f8fa;
-  --grey-100:  #eef0f3;
-  --grey-300:  #c8cdd5;
-  --grey-500:  #8b92a0;
-  --grey-700:  #4a5160;
-  --grey-900:  #1a1d26;
-  --red:       #c0392b;
-  --green:     #1a7f4b;
-  --radius:    8px;
-  --shadow:    0 2px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
-  --font:      'Arial', 'Helvetica Neue', sans-serif;
+  --yellow:      #D4880C;
+  --yellow-dark: #A86A00;
+  --yellow-light:#FFF8E8;
+  --yellow-mid:  #FDECC8;
+  --grey-50:     #FAFAF7;
+  --grey-100:    #F0EDE6;
+  --grey-300:    #C8C4BB;
+  --grey-500:    #8B8780;
+  --grey-700:    #4A4740;
+  --grey-900:    #1A1814;
+  --red:         #c0392b;
+  --green:       #1a7f4b;
+  --radius:      8px;
+  --shadow:      0 2px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+  --font:        'Arial', 'Helvetica Neue', sans-serif;
 }
 
 html { font-size: 15px; }
@@ -31,7 +32,7 @@ body {
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .site-header {
-  background: var(--blue);
+  background: var(--grey-900);
   padding: 0 2rem;
   height: 52px;
   display: flex;
@@ -55,10 +56,11 @@ body {
 }
 
 .project-tag {
-  color: rgba(255,255,255,.65);
+  color: var(--yellow);
   font-size: .8rem;
+  font-weight: 600;
   padding: .2rem .55rem;
-  border: 1px solid rgba(255,255,255,.3);
+  border: 1px solid rgba(212,136,12,.45);
   border-radius: 20px;
 }
 
@@ -131,7 +133,7 @@ body {
   letter-spacing: .01em;
 }
 
-.required { color: var(--blue); }
+.required { color: var(--yellow-dark); }
 
 .input {
   height: 38px;
@@ -147,8 +149,8 @@ body {
 }
 
 .input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(21,96,130,.12);
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(212,136,12,.15);
 }
 
 .input::placeholder { color: var(--grey-300); }
@@ -170,8 +172,8 @@ body {
 }
 
 .file-drop:hover, .file-drop.drag-over {
-  border-color: var(--blue);
-  background: var(--blue-light);
+  border-color: var(--yellow);
+  background: var(--yellow-light);
 }
 
 .file-drop.has-file {
@@ -201,7 +203,7 @@ body {
 
 .file-drop-label svg { flex-shrink: 0; }
 .file-drop.has-file .file-drop-label { color: var(--green); font-weight: 600; }
-.link { color: var(--blue); text-decoration: underline; }
+.link { color: var(--yellow-dark); text-decoration: underline; }
 
 /* ── Actions ─────────────────────────────────────────────────────────────── */
 .actions { margin-top: 1.75rem; }
@@ -212,19 +214,19 @@ body {
   gap: .5rem;
   height: 40px;
   padding: 0 1.5rem;
-  background: var(--blue);
-  color: #fff;
+  background: var(--yellow);
+  color: var(--grey-900);
   border: none;
   border-radius: 6px;
   font-family: var(--font);
   font-size: .88rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background .15s;
 }
 
-.btn-primary:hover { background: var(--blue-dark); }
-.btn-primary:disabled { background: var(--grey-300); cursor: not-allowed; }
+.btn-primary:hover { background: var(--yellow-dark); color: #fff; }
+.btn-primary:disabled { background: var(--grey-300); color: #fff; cursor: not-allowed; }
 
 .spinner-icon {
   width: 16px;
@@ -256,9 +258,9 @@ body {
 }
 
 .status-box.info {
-  background: var(--blue-light);
-  border: 1px solid #b3cfe0;
-  color: var(--blue-dark);
+  background: var(--yellow-light);
+  border: 1px solid var(--yellow-mid);
+  color: var(--yellow-dark);
 }
 
 /* ── CLI panel ───────────────────────────────────────────────────────────── */
@@ -292,16 +294,16 @@ body {
   font-family: var(--font);
   font-size: .8rem;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--yellow-dark);
   background: none;
-  border: 1px solid var(--blue);
+  border: 1px solid var(--yellow);
   border-radius: 5px;
   padding: .25rem .7rem;
   cursor: pointer;
   transition: background .12s, color .12s;
 }
 
-.btn-copy:hover { background: var(--blue); color: #fff; }
+.btn-copy:hover { background: var(--yellow); color: var(--grey-900); }
 
 /* ── CSV section ─────────────────────────────────────────────────────────── */
 .csv-section {
@@ -330,15 +332,15 @@ body {
 
 /* ── Auto-filled field highlight ─────────────────────────────────────────── */
 .input--autofilled {
-  background-color: #e8f0fe !important;
-  border-color: #7bafd4 !important;
+  background-color: var(--yellow-light) !important;
+  border-color: var(--yellow) !important;
 }
 
 /* ── Select element ──────────────────────────────────────────────────────── */
 .select-input {
   height: 38px;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b92a0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b8780' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right .75rem center;
   padding-right: 2.25rem;
@@ -362,22 +364,22 @@ body {
 }
 
 .textarea-input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(21,96,130,.12);
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(212,136,12,.15);
 }
 
 .textarea-input::placeholder { color: var(--grey-300); }
 
 /* ── Download panel ──────────────────────────────────────────────────────── */
 .card--downloads {
-  border-color: #a3d9b8;
-  background: #f0faf4;
+  border-color: var(--yellow-mid);
+  background: var(--yellow-light);
 }
 
 .download-heading {
   font-size: .82rem;
   font-weight: 700;
-  color: var(--green);
+  color: var(--yellow-dark);
   text-transform: uppercase;
   letter-spacing: .06em;
   margin-bottom: 1rem;
@@ -407,20 +409,20 @@ body {
 }
 
 .btn-download:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--blue-light);
+  border-color: var(--yellow);
+  color: var(--yellow-dark);
+  background: var(--yellow-light);
 }
 
 .btn-download--primary {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: var(--grey-900);
 }
 
 .btn-download--primary:hover {
-  background: var(--blue-dark);
-  border-color: var(--blue-dark);
+  background: var(--yellow-dark);
+  border-color: var(--yellow-dark);
   color: #fff;
 }
 
