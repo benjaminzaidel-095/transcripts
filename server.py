@@ -18,7 +18,7 @@ from fastapi.responses import JSONResponse
 import config
 from pipeline.cleaner import clean_transcript
 from pipeline.notes import generate_notes
-from pipeline.docx_builder import build_docx
+from pipeline.docx_builder import build_transcript_docx, build_notes_docx
 
 app = FastAPI(title="IVD Transcript Tool", docs_url=None, redoc_url=None)
 
@@ -81,22 +81,27 @@ async def process_transcript(
         "notes": notes,
     }
 
-    # Build docx, read into memory, clean up temp file
-    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
-        out_path = Path(tmp.name)
+    # Build transcript docx and notes docx, read into memory, clean up temp files
+    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp1:
+        transcript_path = Path(tmp1.name)
+    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp2:
+        notes_path = Path(tmp2.name)
 
     try:
-        await asyncio.to_thread(build_docx, payload, out_path)
-        docx_bytes = out_path.read_bytes()
+        await asyncio.to_thread(build_transcript_docx, payload, transcript_path)
+        await asyncio.to_thread(build_notes_docx, payload, notes_path)
+        transcript_bytes = transcript_path.read_bytes()
+        notes_bytes = notes_path.read_bytes()
     finally:
-        out_path.unlink(missing_ok=True)
+        transcript_path.unlink(missing_ok=True)
+        notes_path.unlink(missing_ok=True)
 
     # Return both files as base64 JSON so the browser can offer two download buttons
     return JSONResponse({
-        "transcript_filename": f"{num}_Cleaned.txt",
-        "transcript_b64": base64.b64encode(cleaned.encode("utf-8")).decode("ascii"),
+        "transcript_filename": f"{num}_Cleaned.docx",
+        "transcript_b64": base64.b64encode(transcript_bytes).decode("ascii"),
         "notes_filename": f"{num}_Notes.docx",
-        "notes_b64": base64.b64encode(docx_bytes).decode("ascii"),
+        "notes_b64": base64.b64encode(notes_bytes).decode("ascii"),
     })
 
 

@@ -278,7 +278,8 @@ form.addEventListener("submit", async e => {
 
       // Wire up the two download buttons
       dlTranscript.onclick = () =>
-        downloadB64(data.transcript_b64, data.transcript_filename, "text/plain");
+        downloadB64(data.transcript_b64, data.transcript_filename,
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
       dlNotes.onclick = () =>
         downloadB64(data.notes_b64, data.notes_filename,
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document");

@@ -46,17 +46,26 @@ NOTES_SECTIONS = [
 ]
 
 
-# ── Public entry point ────────────────────────────────────────────────────────
+# ── Public entry points ───────────────────────────────────────────────────────
 
-def build_docx(payload: dict, output_path: Path) -> None:
+def build_transcript_docx(payload: dict, output_path: Path) -> None:
     """
-    Build output_path.docx from payload using the IV_template.docx as base.
-    payload keys: header (dict), transcript (list of {speaker,text}),
-                  notes (dict: section -> list of strings, where strings may be
-                  bullet text OR quote lines starting with '"')
+    Build a transcript-only .docx: header block + horizontal rule + cleaned turns.
+    payload keys: header (dict), transcript (list of {speaker, text})
     """
     sectPr = _extract_sectPr()
-    body_paragraphs = _build_body(payload, sectPr)
+    body_paragraphs = _build_transcript_body(payload, sectPr)
+    new_doc_xml = _wrap_document(body_paragraphs)
+    _write_docx(new_doc_xml, output_path)
+
+
+def build_notes_docx(payload: dict, output_path: Path) -> None:
+    """
+    Build a notes-only .docx: header block + horizontal rule + 6 notes sections.
+    payload keys: header (dict), notes (dict: section -> list of strings)
+    """
+    sectPr = _extract_sectPr()
+    body_paragraphs = _build_notes_body(payload, sectPr)
     new_doc_xml = _wrap_document(body_paragraphs)
     _write_docx(new_doc_xml, output_path)
 
@@ -75,26 +84,29 @@ def _extract_sectPr() -> str:
 
 # ── Body assembly ─────────────────────────────────────────────────────────────
 
-def _build_body(payload: dict, sectPr: str) -> str:
-    parts = []
+def _header_block(h: dict) -> list[str]:
+    return [
+        _header_para("Interview Subject:", "IVD Sequencing Landscape"),
+        _header_para("Interview Date:", h["date"]),
+        _header_para("Interviewee Demographics:", f"{h['role']}, {h['setting']}, {h['location']}"),
+        _HRULE,
+        _blank_para(),
+    ]
 
-    h = payload["header"]
-    # Header block
-    parts.append(_header_para("Interview Subject:", "IVD Sequencing Landscape"))
-    parts.append(_header_para("Interview Date:", h["date"]))
-    parts.append(_header_para("Interviewee Demographics:", f"{h['role']}, {h['setting']}, {h['location']}"))
-    # Horizontal rule (preserved from template)
-    parts.append(_HRULE)
-    # Blank spacer
-    parts.append(_blank_para())
 
-    # Transcript turns
+def _build_transcript_body(payload: dict, sectPr: str) -> str:
+    parts = _header_block(payload["header"])
+
     for turn in payload["transcript"]:
         parts.append(_transcript_para(turn["speaker"], turn["text"]))
         parts.append(_blank_para())
 
-    # Notes section
-    parts.append(_page_break())
+    parts.append(sectPr)
+    return "\n".join(parts)
+
+
+def _build_notes_body(payload: dict, sectPr: str) -> str:
+    parts = _header_block(payload["header"])
     parts.append(_notes_title())
 
     notes = payload["notes"]
@@ -106,7 +118,6 @@ def _build_body(payload: dict, sectPr: str) -> str:
         else:
             for item in items:
                 if item.startswith('"') or item.startswith("\u201c"):
-                    # Supporting quote line
                     parts.append(_quote_para(item))
                 else:
                     parts.append(_bullet_para(item))

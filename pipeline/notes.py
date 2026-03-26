@@ -31,7 +31,7 @@ def generate_notes(cleaned_transcript: str) -> dict[str, list[str]]:
     client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=config.NOTES_MODEL,
-        max_tokens=4096,
+        max_tokens=8192,
         messages=[{"role": "user", "content": prompt}],
     )
     raw_notes = message.content[0].text.strip()
