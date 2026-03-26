@@ -14,7 +14,10 @@
       "Bash(PYTHONUTF8=1 python scripts/validate.py output/IV_test.docx)",
       "Bash(python scripts/office/unpack.py \"C:/Users/BenjaminZaidel/Downloads/IV2_Cleaned \\(1\\).docx\" \"C:/Users/BenjaminZaidel/Desktop/RSS24/transcripts/template_unpacked/\")",
       "Bash(python scripts/unpack.py \"C:/Users/BenjaminZaidel/Downloads/IV2_Cleaned \\(1\\).docx\" template_unpacked/)",
-      "Bash(PYTHONUTF8=1 python scripts/validate.py output/IV1_template_test.docx)"
+      "Bash(PYTHONUTF8=1 python scripts/validate.py output/IV1_template_test.docx)",
+      "Read(//c/Users/BenjaminZaidel/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/60148888-df0f-4677-ae10-56b079e082f2/98116398-c268-4789-98d8-9eedc2800f95/skills/docx/**)",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\BenjaminZaidel\\\\Downloads\\\\IV2_Cleaned \\(1\\).docx\" -o output.md)",
+      "Bash(python scripts/office/unpack.py \"C:/Users/BenjaminZaidel/Downloads/IV2_Cleaned \\(1\\).docx\" unpacked_iv2/)"
     ]
   }
 }

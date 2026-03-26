@@ -48,11 +48,10 @@ body {
   gap: 1rem;
 }
 
-.brand {
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: .02em;
+.brand-logo {
+  height: 28px;
+  width: auto;
+  filter: brightness(0) invert(1);
 }
 
 .project-tag {
