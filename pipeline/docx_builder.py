@@ -6,14 +6,25 @@ numbering), then replace document.xml body content with generated paragraphs whi
 preserving the sectPr (page layout, header/footer references).
 """
 
-import os
+import io
 import re
-import shutil
-import tempfile
 import zipfile
 from pathlib import Path
 
 TEMPLATE_PATH = Path(__file__).parent.parent / "template" / "IV_template.docx"
+
+# Read template once at module load — avoids repeated disk I/O on every request
+_TEMPLATE_BYTES: bytes = TEMPLATE_PATH.read_bytes()
+
+def _load_sect_pr() -> str:
+    with zipfile.ZipFile(io.BytesIO(_TEMPLATE_BYTES), "r") as zf:
+        raw = zf.read("word/document.xml").decode("utf-8")
+    m = re.search(r"<w:sectPr[\s\S]*?</w:sectPr>", raw)
+    if not m:
+        raise RuntimeError("Could not find sectPr in template document.xml")
+    return m.group(0)
+
+_CACHED_SECT_PR: str = _load_sect_pr()
 
 # ── XML namespace block copied from template's document.xml root ─────────────
 _NS = (
@@ -73,13 +84,8 @@ def build_notes_docx(payload: dict, output_path: Path) -> None:
 # ── sectPr extraction ─────────────────────────────────────────────────────────
 
 def _extract_sectPr() -> str:
-    """Read the sectPr block from the template's document.xml."""
-    with zipfile.ZipFile(TEMPLATE_PATH, "r") as zf:
-        raw = zf.read("word/document.xml").decode("utf-8")
-    m = re.search(r"<w:sectPr[\s\S]*?</w:sectPr>", raw)
-    if not m:
-        raise RuntimeError("Could not find sectPr in template document.xml")
-    return m.group(0)
+    """Return the cached sectPr block from the template."""
+    return _CACHED_SECT_PR
 
 
 # ── Body assembly ─────────────────────────────────────────────────────────────
@@ -140,33 +146,22 @@ def _wrap_document(body_content: str) -> str:
 # ── Zip assembly ──────────────────────────────────────────────────────────────
 
 def _write_docx(new_doc_xml: str, output_path: Path) -> None:
+    """Build output docx entirely in memory — no temp files, single zip pass."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Extract template
-        with zipfile.ZipFile(TEMPLATE_PATH, "r") as zf:
-            zf.extractall(tmpdir)
+    doc_xml_bytes = new_doc_xml.encode("utf-8")
+    out_buf = io.BytesIO()
 
-        # Overwrite document.xml
-        doc_path = os.path.join(tmpdir, "word", "document.xml")
-        with open(doc_path, "w", encoding="utf-8") as f:
-            f.write(new_doc_xml)
+    with zipfile.ZipFile(io.BytesIO(_TEMPLATE_BYTES), "r") as zf_src:
+        with zipfile.ZipFile(out_buf, "w") as zf_out:
+            for item in zf_src.infolist():
+                if item.filename == "word/document.xml":
+                    zf_out.writestr(item, doc_xml_bytes)
+                else:
+                    zf_out.writestr(item, zf_src.read(item.filename))
 
-        # Rezip — preserve original compression type per file
-        with zipfile.ZipFile(TEMPLATE_PATH, "r") as zf_orig:
-            orig_info = {zi.filename: zi for zi in zf_orig.infolist()}
-
-        with zipfile.ZipFile(str(output_path), "w", zipfile.ZIP_DEFLATED) as zout:
-            for root, dirs, files in os.walk(tmpdir):
-                dirs.sort()
-                for fname in sorted(files):
-                    fpath = os.path.join(root, fname)
-                    arcname = os.path.relpath(fpath, tmpdir).replace("\\", "/")
-                    compress = zipfile.ZIP_DEFLATED
-                    if arcname in orig_info:
-                        compress = orig_info[arcname].compress_type
-                    zout.write(fpath, arcname, compress_type=compress)
+    output_path.write_bytes(out_buf.getvalue())
 
 
 # ── Paragraph XML builders ────────────────────────────────────────────────────

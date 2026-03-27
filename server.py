@@ -101,8 +101,10 @@ async def process_transcript(
         notes_path = Path(tmp2.name)
 
     try:
-        await asyncio.to_thread(build_transcript_docx, payload, transcript_path)
-        await asyncio.to_thread(build_notes_docx, payload, notes_path)
+        await asyncio.gather(
+            asyncio.to_thread(build_transcript_docx, payload, transcript_path),
+            asyncio.to_thread(build_notes_docx, payload, notes_path),
+        )
         transcript_bytes = transcript_path.read_bytes()
         notes_bytes = notes_path.read_bytes()
     finally:

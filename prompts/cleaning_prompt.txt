@@ -16,6 +16,7 @@ OUTPUT FORMAT — follow this exactly:
 - If the raw transcript uses "System" as a speaker name, rename it to "Stakeholder"
 - Separate each speaker turn with a single blank line
 - Do not add any headers, section numbers, timestamps, or commentary
+- Minimize dashes of any kind
 
 Return ONLY the cleaned transcript text. No preamble, no closing remarks.
 
