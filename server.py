@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 import config
+from pipeline.parser import parse_transcript, turns_to_text
 from pipeline.cleaner import clean_transcript
 from pipeline.notes import generate_notes
 from pipeline.docx_builder import build_transcript_docx, build_notes_docx
@@ -45,6 +46,7 @@ async def process_transcript(
     location: str = Form(...),
     date: str = Form(default=""),
     interview_num: str = Form(default=""),
+    institution_type: str = Form(default=""),
 ):
     if not config.ANTHROPIC_API_KEY:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured on server.")
@@ -55,9 +57,14 @@ async def process_transcript(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Transcript must be UTF-8 encoded text.")
 
+    # Step 1: parse Granola timestamps + rename speakers (You→DeciBio Moderator, System→Stakeholder)
+    # Falls back to raw_text if format isn't recognised (e.g. pasted plain text)
+    turns = parse_transcript(raw_text)
+    preprocessed = turns_to_text(turns) if turns else raw_text
+
     # Run both Claude calls in threads so the event loop isn't blocked
     try:
-        cleaned = await asyncio.to_thread(clean_transcript, raw_text)
+        cleaned = await asyncio.to_thread(clean_transcript, preprocessed)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Cleaning failed: {e}")
 
@@ -70,6 +77,10 @@ async def process_transcript(
     interview_date = _format_date(date) if date else _today()
     num = interview_num.strip() if interview_num.strip() else "IV"
 
+    # Derive the stakeholder label — "Pharma" → "Pharma Stakeholder", blank → "Stakeholder"
+    _it = institution_type.strip()
+    stakeholder_label = f"{_it} Stakeholder" if _it else "Stakeholder"
+
     payload = {
         "header": {
             "date": interview_date,
@@ -77,7 +88,7 @@ async def process_transcript(
             "setting": setting,
             "location": location,
         },
-        "transcript": _parse_cleaned_turns(cleaned),
+        "transcript": _parse_cleaned_turns(cleaned, stakeholder_label),
         "notes": notes,
     }
 
@@ -107,7 +118,7 @@ async def process_transcript(
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _parse_cleaned_turns(cleaned_text: str) -> list[dict]:
+def _parse_cleaned_turns(cleaned_text: str, stakeholder_label: str = "Stakeholder") -> list[dict]:
     turns, current_speaker, current_lines = [], None, []
 
     def flush():
@@ -121,7 +132,9 @@ def _parse_cleaned_turns(cleaned_text: str) -> list[dict]:
         m = re.match(r"^(DeciBio Moderator|Stakeholder):\s*(.*)", stripped)
         if m:
             flush()
-            current_speaker = m.group(1)
+            raw_speaker = m.group(1)
+            # Rename generic "Stakeholder" to the institution-specific label
+            current_speaker = stakeholder_label if raw_speaker == "Stakeholder" else raw_speaker
             current_lines = [m.group(2)] if m.group(2) else []
         elif current_speaker:
             current_lines.append(stripped)

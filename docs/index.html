@@ -98,15 +98,24 @@
                    placeholder="e.g. US" autocomplete="off" />
           </div>
           <div class="field-group">
-            <label for="interviewDate" class="label">Interview Date</label>
-            <input type="date" id="interviewDate" name="interviewDate" class="input" />
+            <label for="institutionType" class="label">
+              Institution Type <span class="label-optional">— optional</span>
+            </label>
+            <input type="text" id="institutionType" name="institutionType" class="input"
+                   placeholder="e.g. Academic, Pharma, Reference Lab" autocomplete="off" />
           </div>
         </div>
 
-        <div class="field-group field-group--narrow">
-          <label for="interviewNum" class="label">Interview Number</label>
-          <input type="text" id="interviewNum" name="interviewNum" class="input"
-                 placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
+        <div class="field-row">
+          <div class="field-group">
+            <label for="interviewDate" class="label">Interview Date</label>
+            <input type="date" id="interviewDate" name="interviewDate" class="input" />
+          </div>
+          <div class="field-group field-group--narrow" style="max-width:100%">
+            <label for="interviewNum" class="label">Interview Number</label>
+            <input type="text" id="interviewNum" name="interviewNum" class="input"
+                   placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
+          </div>
         </div>
 
         <!-- ── Submit ───────────────────────────────────────────────────── -->
