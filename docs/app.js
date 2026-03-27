@@ -211,20 +211,50 @@ function normalizeDate(str) {
 }
 
 // ── Progress stage labels ─────────────────────────────────────────────────────
-// Rough timing based on typical transcript length (haiku cleaning ~15s, sonnet notes ~40s)
+// Timings based on typical transcript length (haiku cleaning ~20s, sonnet notes ~45s)
 const STAGES = [
-  [0,     "Cleaning transcript…"],
-  [20000, "Generating notes…"],
-  [60000, "Building document…"],
+  { ms:     0, label: "Cleaning transcript…",  detail: "Removing filler words, fixing grammar, and standardising speaker labels." },
+  { ms: 22000, label: "Generating notes…",      detail: "Extracting key themes, notable quotes, and competitive intelligence." },
+  { ms: 58000, label: "Building documents…",    detail: "Assembling the cleaned transcript and notes into formatted Word files." },
 ];
 let stageTimers = [];
+let _currentStage = 0;
 
 function startStages() {
   stageTimers.forEach(clearTimeout);
   stageTimers = [];
-  STAGES.forEach(([ms, label]) => {
-    stageTimers.push(setTimeout(() => { if (stageLabel) stageLabel.textContent = label; }, ms));
+  _currentStage = 0;
+  _showStage(0);                                   // Show stage 1 immediately
+  STAGES.slice(1).forEach((s, i) => {
+    stageTimers.push(setTimeout(() => _showStage(i + 1), s.ms));
   });
+}
+
+function _showStage(idx) {
+  _currentStage = idx;
+  const s = STAGES[idx];
+  if (stageLabel) stageLabel.textContent = s.label;
+
+  // Build dots HTML
+  const dots = STAGES.map((_, i) => {
+    const cls = i < idx ? "done" : i === idx ? "active" : "";
+    return `<span class="status-dot ${cls}"></span>`;
+  }).join("");
+
+  statusBox.innerHTML =
+    `<div class="status-stage">` +
+      `<span class="status-stage-label">` +
+        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">` +
+          `<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>` +
+        `</svg>` +
+        s.label +
+      `</span>` +
+      `<span class="status-stage-counter">Step ${idx + 1} of ${STAGES.length}</span>` +
+    `</div>` +
+    `<div class="status-stage-detail">${s.detail}</div>` +
+    `<div class="status-progress">${dots}</div>`;
+  statusBox.className = "status-box info";
+  statusBox.hidden = false;
 }
 
 function stopStages() {
@@ -250,7 +280,6 @@ form.addEventListener("submit", async e => {
   if (!location) return showStatus("Location is required.", "error");
 
   setLoading(true);
-  hideStatus();
   downloadPanel.hidden = true;
   cliPanel.hidden = true;
 
@@ -322,7 +351,7 @@ function setLoading(on) {
   submitBtn.disabled = on;
   btnText.hidden     = on;
   btnSpinner.hidden  = !on;
-  if (on && stageLabel) stageLabel.textContent = STAGES[0][1];
+  if (on && stageLabel) stageLabel.textContent = STAGES[0].label;
 }
 
 function showStatus(msg, type = "info") {

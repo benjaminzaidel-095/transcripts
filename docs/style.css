@@ -44,7 +44,7 @@ body {
 }
 
 .header-inner {
-  max-width: 760px;
+  max-width: 920px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -72,7 +72,7 @@ body {
 /* ── Main ────────────────────────────────────────────────────────────────── */
 .main {
   flex: 1;
-  max-width: 760px;
+  max-width: 920px;
   width: 100%;
   margin: 2.5rem auto;
   padding: 0 1.25rem;
@@ -369,6 +369,63 @@ body {
   border: 1px solid var(--yellow-mid);
   color: var(--yellow-dark);
 }
+
+/* ── Loading status (shown inside status box during processing) ──────────── */
+.status-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .45rem;
+}
+
+.status-stage-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 700;
+  font-size: .875rem;
+}
+
+.status-stage-label svg {
+  flex-shrink: 0;
+  animation: spin .9s linear infinite;
+}
+
+.status-stage-counter {
+  font-size: .72rem;
+  font-weight: 600;
+  opacity: .7;
+  white-space: nowrap;
+  background: rgba(233,176,9,.18);
+  padding: .15rem .5rem;
+  border-radius: 20px;
+}
+
+.status-stage-detail {
+  font-size: .8rem;
+  font-weight: 400;
+  opacity: .85;
+  line-height: 1.5;
+}
+
+/* ── Stage progress dots ─────────────────────────────────────────────────── */
+.status-progress {
+  display: flex;
+  gap: .35rem;
+  margin-top: .65rem;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--yellow-mid);
+  transition: background .3s;
+}
+
+.status-dot.active  { background: var(--yellow-dark); }
+.status-dot.done    { background: var(--yellow); }
 
 /* ── CLI panel ───────────────────────────────────────────────────────────── */
 .cli-title {
