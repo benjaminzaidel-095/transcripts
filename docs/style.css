@@ -87,7 +87,7 @@ body {
   border: 1px solid var(--grey-100);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
-  padding: 2.25rem 2.5rem;
+  padding: 2.5rem;
 }
 
 .card--secondary {
@@ -96,20 +96,101 @@ body {
   box-shadow: var(--shadow);
 }
 
-.card-title {
-  font-size: 1.5rem;
+/* ── Card header ─────────────────────────────────────────────────────────── */
+.card-header {
+  margin-bottom: 2.25rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--grey-100);
+}
+
+.card-eyebrow {
+  font-size: .68rem;
   font-weight: 700;
-  letter-spacing: -.02em;
+  color: var(--yellow-dark);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: .5rem;
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
   color: var(--grey-900);
-  margin-bottom: .4rem;
+  margin-bottom: .5rem;
+  line-height: 1.2;
 }
 
 .card-subtitle {
   font-size: .875rem;
   color: var(--grey-500);
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 560px;
+  line-height: 1.65;
+  max-width: 520px;
+}
+
+/* ── Form sections ───────────────────────────────────────────────────────── */
+.form-section {
+  padding-top: 2rem;
+  margin-bottom: 0;
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  margin-bottom: 1.25rem;
+}
+
+.form-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--yellow);
+  color: var(--grey-900);
+  border-radius: 50%;
+  font-size: .65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.form-step--muted {
+  background: var(--grey-200);
+  color: var(--grey-500);
+  font-size: .58rem;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.form-section-optional {
+  font-weight: 400;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--grey-400, #aaa);
+  font-size: .72rem;
+}
+
+/* ── Form actions ────────────────────────────────────────────────────────── */
+.form-actions {
+  padding-top: 2rem;
+  margin-top: .25rem;
+  border-top: 1px solid var(--grey-100);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.actions-hint {
+  font-size: .78rem;
+  color: var(--grey-500);
 }
 
 /* ── Form fields ─────────────────────────────────────────────────────────── */
@@ -142,13 +223,6 @@ body {
 }
 
 .required { color: var(--yellow-dark); }
-
-.label-optional {
-  font-weight: 400;
-  font-style: italic;
-  color: var(--grey-500);
-  letter-spacing: 0;
-}
 
 .input {
   height: 40px;
@@ -222,7 +296,7 @@ body {
 .file-drop.has-file .file-drop-label { color: var(--green); font-weight: 600; }
 .link { color: var(--yellow-dark); text-decoration: underline; }
 
-/* ── Actions ─────────────────────────────────────────────────────────────── */
+/* ── Actions (legacy, kept for CLI panel) ────────────────────────────────── */
 .actions { margin-top: 2rem; }
 
 .btn-primary {
@@ -342,30 +416,7 @@ body {
   border-color: var(--yellow);
 }
 
-/* ── CSV section ─────────────────────────────────────────────────────────── */
-.csv-section {
-  margin-bottom: 1.75rem;
-  padding-bottom: 1.75rem;
-  border-bottom: 1px solid var(--grey-100);
-}
-
-.section-label {
-  font-size: .7rem;
-  font-weight: 700;
-  color: var(--grey-500);
-  text-transform: uppercase;
-  letter-spacing: .09em;
-  margin-bottom: .75rem;
-}
-
-.section-label-sub {
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-  font-style: italic;
-  font-size: .75rem;
-}
-
+/* ── CSV drop ────────────────────────────────────────────────────────────── */
 .csv-drop { margin-bottom: 0; }
 
 /* ── Auto-filled field highlight ─────────────────────────────────────────── */
@@ -413,7 +464,7 @@ body {
 /* ── Download panel ──────────────────────────────────────────────────────── */
 .card--downloads {
   background: #fff;
-  border: 1px solid var(--grey-100);
+  border: 1.5px solid var(--yellow-mid);
   position: relative;
   overflow: hidden;
 }
@@ -426,13 +477,19 @@ body {
   background: var(--yellow);
 }
 
-.download-heading {
-  font-size: .72rem;
+.download-header {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .9rem;
   font-weight: 700;
-  color: var(--grey-500);
-  text-transform: uppercase;
-  letter-spacing: .09em;
-  margin-bottom: 1rem;
+  color: var(--grey-700);
+  margin-bottom: 1.1rem;
+}
+
+.download-header svg {
+  color: var(--green);
+  flex-shrink: 0;
 }
 
 .download-row {

@@ -46,7 +46,6 @@ async def process_transcript(
     location: str = Form(...),
     date: str = Form(default=""),
     interview_num: str = Form(default=""),
-    institution_type: str = Form(default=""),
 ):
     if not config.ANTHROPIC_API_KEY:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured on server.")
@@ -77,9 +76,12 @@ async def process_transcript(
     interview_date = _format_date(date) if date else _today()
     num = interview_num.strip() if interview_num.strip() else "IV"
 
-    # Derive the stakeholder label — "Pharma" → "Pharma Stakeholder", blank → "Stakeholder"
-    _it = institution_type.strip()
-    stakeholder_label = f"{_it} Stakeholder" if _it else "Stakeholder"
+    # Derive stakeholder label from the setting field.
+    # "Core Lab, AMC" → last segment → "AMC" → "AMC Stakeholder"
+    # "Pharma" (no comma) → "Pharma" → "Pharma Stakeholder"
+    _parts = [p.strip() for p in setting.split(",") if p.strip()]
+    _inst = _parts[-1] if _parts else ""
+    stakeholder_label = f"{_inst} Stakeholder" if _inst else "Stakeholder"
 
     payload = {
         "header": {
@@ -121,6 +123,12 @@ async def process_transcript(
 def _parse_cleaned_turns(cleaned_text: str, stakeholder_label: str = "Stakeholder") -> list[dict]:
     turns, current_speaker, current_lines = [], None, []
 
+    # Matches the expected labels AND the raw Granola labels as a safety fallback
+    _SPEAKER_RE = re.compile(
+        r"^(DeciBio Moderator|Stakeholder|You|System):\s*(.*)",
+        re.IGNORECASE,
+    )
+
     def flush():
         if current_speaker and current_lines:
             turns.append({"speaker": current_speaker, "text": " ".join(current_lines).strip()})
@@ -129,12 +137,15 @@ def _parse_cleaned_turns(cleaned_text: str, stakeholder_label: str = "Stakeholde
         stripped = line.strip()
         if not stripped:
             flush(); current_speaker = None; current_lines = []; continue
-        m = re.match(r"^(DeciBio Moderator|Stakeholder):\s*(.*)", stripped)
+        m = _SPEAKER_RE.match(stripped)
         if m:
             flush()
-            raw_speaker = m.group(1)
-            # Rename generic "Stakeholder" to the institution-specific label
-            current_speaker = stakeholder_label if raw_speaker == "Stakeholder" else raw_speaker
+            raw = m.group(1).lower()
+            if raw in ("you", "decibio moderator"):
+                current_speaker = "DeciBio Moderator"
+            else:
+                # "stakeholder" or "system" both map to the institution-specific label
+                current_speaker = stakeholder_label
             current_lines = [m.group(2)] if m.group(2) else []
         elif current_speaker:
             current_lines.append(stripped)

@@ -236,14 +236,13 @@ function stopStages() {
 form.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const file            = fileInput.files[0];
-  const pasteText       = pasteArea.value.trim();
-  const role            = val("role");
-  const setting         = val("setting");
-  const location        = val("location");
-  const date            = val("interviewDate");
-  const num             = val("interviewNum");
-  const institutionType = val("institutionType");
+  const file      = fileInput.files[0];
+  const pasteText = pasteArea.value.trim();
+  const role      = val("role");
+  const setting   = val("setting");
+  const location  = val("location");
+  const date      = val("interviewDate");
+  const num       = val("interviewNum");
 
   if (!file && !pasteText) return showStatus("Please upload a file or paste transcript text.", "error");
   if (!role)     return showStatus("Interviewee Role is required.", "error");
@@ -265,9 +264,8 @@ form.addEventListener("submit", async e => {
     fd.append("role",     role);
     fd.append("setting",  setting);
     fd.append("location", location);
-    if (date)            fd.append("date", date);
-    if (num)             fd.append("interview_num", num);
-    if (institutionType) fd.append("institution_type", institutionType);
+    if (date) fd.append("date", date);
+    if (num)  fd.append("interview_num", num);
 
     startStages();
     try {

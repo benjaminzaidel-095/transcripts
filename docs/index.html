@@ -16,17 +16,25 @@
 
   <main class="main">
     <div class="card">
-      <h1 class="card-title">Transcript Cleaning Tool</h1>
-      <p class="card-subtitle">
-        Upload or paste a raw transcript and fill in interview details to generate a
-        cleaned, formatted Word document with structured notes.
-      </p>
+
+      <div class="card-header">
+        <p class="card-eyebrow">Interview Processing</p>
+        <h1 class="card-title">Transcript Cleaning Tool</h1>
+        <p class="card-subtitle">
+          Upload a raw transcript, fill in the interview details, and get a
+          cleaned Word document with structured notes — in under two minutes.
+        </p>
+      </div>
 
       <form id="transcriptForm" novalidate>
 
-        <!-- ── Interviewee Lookup ────────────────────────────────────────── -->
-        <div class="csv-section">
-          <p class="section-label">Interviewee Lookup <span class="section-label-sub">— optional</span></p>
+        <!-- ── Step 0: Interviewee Lookup (optional) ──────────────────────── -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="form-step form-step--muted">CSV</span>
+            Interviewee Lookup
+            <span class="form-section-optional">optional</span>
+          </h3>
 
           <div class="file-drop csv-drop" id="csvDrop">
             <input type="file" id="csvFile" accept=".csv" class="file-input" />
@@ -47,81 +55,86 @@
           </div>
         </div>
 
-        <!-- ── Transcript Input ─────────────────────────────────────────── -->
-        <div class="field-group">
-          <label for="transcriptFile" class="label">
-            Transcript File <span class="required">*</span>
-          </label>
-          <div class="file-drop" id="fileDrop">
-            <input type="file" id="transcriptFile" accept=".txt" class="file-input" />
-            <div class="file-drop-label" id="fileDropLabel">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
-                <path d="M3 14v1.5A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5V14"/>
-              </svg>
-              <span>Drop .txt file here or <span class="link">browse</span></span>
+        <!-- ── Step 1: Upload Transcript ─────────────────────────────────── -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="form-step">1</span>
+            Upload Transcript
+          </h3>
+
+          <div class="field-group">
+            <label for="transcriptFile" class="label">
+              Transcript File <span class="required">*</span>
+            </label>
+            <div class="file-drop" id="fileDrop">
+              <input type="file" id="transcriptFile" accept=".txt" class="file-input" />
+              <div class="file-drop-label" id="fileDropLabel">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
+                  <path d="M3 14v1.5A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5V14"/>
+                </svg>
+                <span>Drop .txt file here or <span class="link">browse</span></span>
+              </div>
+            </div>
+            <p class="hint">Raw Granola export as a .txt file</p>
+          </div>
+
+          <div class="field-group">
+            <label for="transcriptText" class="label">Or paste transcript text</label>
+            <textarea id="transcriptText" class="textarea-input" rows="9"
+                      placeholder="Paste raw transcript here — any format works…"></textarea>
+          </div>
+        </div>
+
+        <!-- ── Step 2: Interview Details ─────────────────────────────────── -->
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <span class="form-step">2</span>
+            Interview Details
+          </h3>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="role" class="label">
+                Interviewee Role <span class="required">*</span>
+              </label>
+              <input type="text" id="role" name="role" class="input"
+                     placeholder="e.g. Lab Director" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label for="setting" class="label">
+                Setting <span class="required">*</span>
+              </label>
+              <input type="text" id="setting" name="setting" class="input"
+                     placeholder="e.g. Core Lab, AMC" autocomplete="off" />
             </div>
           </div>
-          <p class="hint">Raw transcript as a .txt file</p>
-        </div>
 
-        <div class="field-group">
-          <label for="transcriptText" class="label">Or paste transcript text here</label>
-          <textarea id="transcriptText" class="textarea-input" rows="10"
-                    placeholder="Paste raw transcript here — any format works..."></textarea>
-        </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="location" class="label">
+                Location <span class="required">*</span>
+              </label>
+              <input type="text" id="location" name="location" class="input"
+                     placeholder="e.g. US" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label for="interviewDate" class="label">Interview Date</label>
+              <input type="date" id="interviewDate" name="interviewDate" class="input" />
+            </div>
+          </div>
 
-        <!-- ── Interview Details ────────────────────────────────────────── -->
-        <div class="field-row">
-          <div class="field-group">
-            <label for="role" class="label">
-              Interviewee Role <span class="required">*</span>
-            </label>
-            <input type="text" id="role" name="role" class="input"
-                   placeholder="e.g. Lab Director" autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label for="setting" class="label">
-              Setting <span class="required">*</span>
-            </label>
-            <input type="text" id="setting" name="setting" class="input"
-                   placeholder="e.g. Core Lab, AMC" autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label for="location" class="label">
-              Location <span class="required">*</span>
-            </label>
-            <input type="text" id="location" name="location" class="input"
-                   placeholder="e.g. US" autocomplete="off" />
-          </div>
-          <div class="field-group">
-            <label for="institutionType" class="label">
-              Institution Type <span class="label-optional">— optional</span>
-            </label>
-            <input type="text" id="institutionType" name="institutionType" class="input"
-                   placeholder="e.g. Academic, Pharma, Reference Lab" autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label for="interviewDate" class="label">Interview Date</label>
-            <input type="date" id="interviewDate" name="interviewDate" class="input" />
-          </div>
-          <div class="field-group field-group--narrow" style="max-width:100%">
+          <div class="field-group field-group--narrow">
             <label for="interviewNum" class="label">Interview Number</label>
             <input type="text" id="interviewNum" name="interviewNum" class="input"
                    placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
           </div>
         </div>
 
-        <!-- ── Submit ───────────────────────────────────────────────────── -->
-        <div class="actions">
+        <!-- ── Submit ─────────────────────────────────────────────────────── -->
+        <div class="form-actions">
           <button type="submit" class="btn-primary" id="submitBtn">
-            <span class="btn-text">Generate Transcript</span>
+            <span class="btn-text">Generate Documents</span>
             <span class="btn-spinner" hidden>
               <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -129,6 +142,7 @@
               <span id="stageLabel">Cleaning transcript…</span>
             </span>
           </button>
+          <p class="actions-hint">Typically takes 60–90 seconds</p>
         </div>
 
         <div id="statusBox" class="status-box" hidden></div>
@@ -138,7 +152,12 @@
 
     <!-- ── Download results panel ──────────────────────────────────────── -->
     <div class="card card--downloads" id="downloadPanel" hidden>
-      <p class="download-heading">Ready to download</p>
+      <div class="download-header">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M5 10l4 4 6-7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Files ready</span>
+      </div>
       <div class="download-row">
         <button class="btn-download" id="dlTranscript">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -152,7 +171,7 @@
             <path d="M10 3v10M10 13l-3.5-3.5M10 13l3.5-3.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M3 15.5h14" stroke-linecap="round"/>
           </svg>
-          Notes Document&nbsp;<span class="btn-download-ext">.docx</span>
+          Interview Notes&nbsp;<span class="btn-download-ext">.docx</span>
         </button>
       </div>
     </div>

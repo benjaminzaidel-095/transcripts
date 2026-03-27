@@ -7,9 +7,17 @@ Clean the following raw interview transcript. Your job is to:
 - Preserve ALL substantive content — do not summarize or omit
 - Maintain the full back-and-forth Q&A structure
 - Keep all technical details exactly as stated (platform names, CPT codes, volumes, brands, etc.)
-- Preserve speaker identity: "DeciBio Moderator" and "Stakeholder"
 
-Return ONLY the cleaned transcript text. No preamble, no commentary.
+OUTPUT FORMAT — follow this exactly:
+- Every speaker turn must begin with one of these two labels on its own line:
+    DeciBio Moderator: [cleaned text]
+    Stakeholder: [cleaned text]
+- If the raw transcript uses "You" as a speaker name, rename it to "DeciBio Moderator"
+- If the raw transcript uses "System" as a speaker name, rename it to "Stakeholder"
+- Separate each speaker turn with a single blank line
+- Do not add any headers, section numbers, timestamps, or commentary
+
+Return ONLY the cleaned transcript text. No preamble, no closing remarks.
 
 RAW TRANSCRIPT:
 {raw_transcript}
