@@ -596,6 +596,212 @@ body {
   font-size: .77rem;
 }
 
+/* ── Process layout (form + pipeline sidebar) ────────────────────────────── */
+#processLayout {
+  /* default: single column, fills .main width */
+}
+#processLayout.is-active {
+  display: grid;
+  grid-template-columns: 1fr 272px;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 700px) {
+  #processLayout.is-active {
+    display: block;
+  }
+  #processLayout.is-active .prog-panel {
+    margin-top: 1.25rem;
+  }
+}
+
+/* ── Pipeline progress panel ─────────────────────────────────────────────── */
+.prog-panel {
+  background: #fff;
+  border: 1px solid var(--grey-100);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.prog-title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--grey-500);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  margin-bottom: 1.35rem;
+}
+
+.prog-title svg { color: var(--yellow-dark); flex-shrink: 0; }
+
+/* ── Steps list ──────────────────────────────────────────────────────────── */
+.prog-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* Vertical connector line between icons */
+.prog-steps::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--grey-100);
+  z-index: 0;
+}
+
+.prog-step {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .5rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.prog-step-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid var(--grey-200);
+  transition: border-color .25s, background .25s, box-shadow .25s;
+}
+
+.prog-step-body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem;
+  min-width: 0;
+}
+
+.prog-step-name {
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--grey-400, #bbb);
+  transition: color .2s;
+  white-space: nowrap;
+}
+
+.prog-step-meta {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--grey-300);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: color .2s;
+}
+
+/* ── Active state ────────────────────────────────────────────────────────── */
+.prog-step--active .prog-step-icon {
+  border-color: var(--yellow);
+  background: var(--yellow-light);
+  animation: step-pulse 1.4s ease-in-out infinite;
+}
+.prog-step--active .prog-step-icon::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yellow);
+  display: block;
+}
+.prog-step--active .prog-step-name  { color: var(--grey-900); font-weight: 600; }
+.prog-step--active .prog-step-meta  { color: var(--yellow-dark); }
+
+/* ── Done state ──────────────────────────────────────────────────────────── */
+.prog-step--done .prog-step-icon {
+  border-color: var(--green);
+  background: var(--green);
+}
+.prog-step--done .prog-step-icon::after {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 5l2.5 2.5L8 3' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.prog-step--done .prog-step-name  { color: var(--grey-700); }
+.prog-step--done .prog-step-meta  { color: var(--green); }
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+.prog-step--error .prog-step-icon {
+  border-color: var(--red);
+  background: var(--red);
+}
+.prog-step--error .prog-step-icon::after {
+  content: '×';
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  margin-top: -1px;
+}
+.prog-step--error .prog-step-name  { color: var(--red); }
+.prog-step--error .prog-step-meta  { color: var(--red); opacity: .75; }
+
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(233,176,9,.45); }
+  50%       { box-shadow: 0 0 0 5px rgba(233,176,9,.0);  }
+}
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.prog-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .65rem;
+}
+
+.prog-bar-track {
+  flex: 1;
+  height: 5px;
+  background: var(--grey-100);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.prog-bar-fill {
+  height: 100%;
+  background: var(--yellow);
+  border-radius: 99px;
+  transition: width .7s cubic-bezier(.4, 0, .2, 1);
+}
+
+.prog-pct {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--grey-500);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  text-align: right;
+}
+
+/* ── Elapsed total ───────────────────────────────────────────────────────── */
+.prog-elapsed {
+  font-size: .72rem;
+  color: var(--grey-300);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 .site-footer {
   text-align: center;

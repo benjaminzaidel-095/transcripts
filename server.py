@@ -5,6 +5,7 @@ Deploy to Render (free tier) or run locally with: uvicorn server:app --reload
 
 import asyncio
 import base64
+import json
 import re
 import tempfile
 from datetime import date, datetime
@@ -13,7 +14,7 @@ from sys import platform
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
 
 import config
 from pipeline.parser import parse_transcript, turns_to_text
@@ -56,68 +57,97 @@ async def process_transcript(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Transcript must be UTF-8 encoded text.")
 
-    # Step 1: parse Granola timestamps + rename speakers (You→DeciBio Moderator, System→Stakeholder)
-    # Falls back to raw_text if format isn't recognised (e.g. pasted plain text)
-    turns = parse_transcript(raw_text)
-    preprocessed = turns_to_text(turns) if turns else raw_text
+    # Capture form values for use inside the async closure
+    _role, _setting, _location, _date, _num = role, setting, location, date, interview_num
 
-    # Run both Claude calls in threads so the event loop isn't blocked
-    try:
-        cleaned = await asyncio.to_thread(clean_transcript, preprocessed)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Cleaning failed: {e}")
+    queue: asyncio.Queue = asyncio.Queue()
 
-    try:
-        notes = await asyncio.to_thread(generate_notes, cleaned)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Notes generation failed: {e}")
+    async def run_pipeline():
+        try:
+            # ── Step 1: Parse ─────────────────────────────────────────────────
+            await queue.put({"event": "stage", "stage": "parsing"})
+            turns = parse_transcript(raw_text)
+            preprocessed = turns_to_text(turns) if turns else raw_text
 
-    # Format metadata
-    interview_date = _format_date(date) if date else _today()
-    num = interview_num.strip() if interview_num.strip() else "IV"
+            # ── Step 2: Clean ─────────────────────────────────────────────────
+            await queue.put({"event": "stage", "stage": "cleaning"})
+            try:
+                cleaned = await asyncio.to_thread(clean_transcript, preprocessed)
+            except Exception as e:
+                raise RuntimeError(f"Cleaning failed: {e}")
 
-    # Derive stakeholder label from the setting field.
-    # "Core Lab, AMC" → last segment → "AMC" → "AMC Stakeholder"
-    # "Pharma" (no comma) → "Pharma" → "Pharma Stakeholder"
-    _parts = [p.strip() for p in setting.split(",") if p.strip()]
-    _inst = _parts[-1] if _parts else ""
-    stakeholder_label = f"{_inst} Stakeholder" if _inst else "Stakeholder"
+            # ── Step 3: Notes ─────────────────────────────────────────────────
+            await queue.put({"event": "stage", "stage": "notes"})
+            try:
+                notes = await asyncio.to_thread(generate_notes, cleaned)
+            except Exception as e:
+                raise RuntimeError(f"Notes generation failed: {e}")
 
-    payload = {
-        "header": {
-            "date": interview_date,
-            "role": role,
-            "setting": setting,
-            "location": location,
-        },
-        "transcript": _parse_cleaned_turns(cleaned, stakeholder_label),
-        "notes": notes,
-    }
+            # ── Step 4: Build ─────────────────────────────────────────────────
+            await queue.put({"event": "stage", "stage": "building"})
 
-    # Build transcript docx and notes docx, read into memory, clean up temp files
-    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp1:
-        transcript_path = Path(tmp1.name)
-    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp2:
-        notes_path = Path(tmp2.name)
+            interview_date = _format_date(_date) if _date else _today()
+            num = _num.strip() if _num.strip() else "IV"
 
-    try:
-        await asyncio.gather(
-            asyncio.to_thread(build_transcript_docx, payload, transcript_path),
-            asyncio.to_thread(build_notes_docx, payload, notes_path),
-        )
-        transcript_bytes = transcript_path.read_bytes()
-        notes_bytes = notes_path.read_bytes()
-    finally:
-        transcript_path.unlink(missing_ok=True)
-        notes_path.unlink(missing_ok=True)
+            _parts = [p.strip() for p in _setting.split(",") if p.strip()]
+            _inst = _parts[-1] if _parts else ""
+            stakeholder_label = f"{_inst} Stakeholder" if _inst else "Stakeholder"
 
-    # Return both files as base64 JSON so the browser can offer two download buttons
-    return JSONResponse({
-        "transcript_filename": f"{num}_Cleaned.docx",
-        "transcript_b64": base64.b64encode(transcript_bytes).decode("ascii"),
-        "notes_filename": f"{num}_Notes.docx",
-        "notes_b64": base64.b64encode(notes_bytes).decode("ascii"),
-    })
+            payload = {
+                "header": {
+                    "date": interview_date,
+                    "role": _role,
+                    "setting": _setting,
+                    "location": _location,
+                },
+                "transcript": _parse_cleaned_turns(cleaned, stakeholder_label),
+                "notes": notes,
+            }
+
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp1:
+                transcript_path = Path(tmp1.name)
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp2:
+                notes_path = Path(tmp2.name)
+
+            try:
+                await asyncio.gather(
+                    asyncio.to_thread(build_transcript_docx, payload, transcript_path),
+                    asyncio.to_thread(build_notes_docx, payload, notes_path),
+                )
+                transcript_bytes = transcript_path.read_bytes()
+                notes_bytes = notes_path.read_bytes()
+            finally:
+                transcript_path.unlink(missing_ok=True)
+                notes_path.unlink(missing_ok=True)
+
+            # ── Done ──────────────────────────────────────────────────────────
+            await queue.put({
+                "event": "done",
+                "transcript_filename": f"{num}_Cleaned.docx",
+                "transcript_b64": base64.b64encode(transcript_bytes).decode("ascii"),
+                "notes_filename": f"{num}_Notes.docx",
+                "notes_b64": base64.b64encode(notes_bytes).decode("ascii"),
+            })
+
+        except Exception as e:
+            await queue.put({"event": "error", "detail": str(e)})
+        finally:
+            await queue.put(None)  # sentinel — signals end of stream
+
+    asyncio.create_task(run_pipeline())
+
+    async def event_stream():
+        while True:
+            item = await queue.get()
+            if item is None:
+                break
+            yield f"data: {json.dumps(item)}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -125,7 +155,6 @@ async def process_transcript(
 def _parse_cleaned_turns(cleaned_text: str, stakeholder_label: str = "Stakeholder") -> list[dict]:
     turns, current_speaker, current_lines = [], None, []
 
-    # Matches the expected labels AND the raw Granola labels as a safety fallback
     _SPEAKER_RE = re.compile(
         r"^(DeciBio Moderator|Stakeholder|You|System):\s*(.*)",
         re.IGNORECASE,
@@ -146,7 +175,6 @@ def _parse_cleaned_turns(cleaned_text: str, stakeholder_label: str = "Stakeholde
             if raw in ("you", "decibio moderator"):
                 current_speaker = "DeciBio Moderator"
             else:
-                # "stakeholder" or "system" both map to the institution-specific label
                 current_speaker = stakeholder_label
             current_lines = [m.group(2)] if m.group(2) else []
         elif current_speaker:

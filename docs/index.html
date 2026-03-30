@@ -15,140 +15,199 @@
   </header>
 
   <main class="main">
-    <div class="card">
 
-      <div class="card-header">
-        <p class="card-eyebrow">Interview Processing</p>
-        <h1 class="card-title">Transcript Cleaning Tool</h1>
-        <p class="card-subtitle">
-          Upload a raw transcript, fill in the interview details, and get a
-          cleaned Word document with structured notes — in under two minutes.
-        </p>
-      </div>
+    <!-- ── Process layout: form + pipeline sidebar ──────────────────────── -->
+    <div id="processLayout">
 
-      <form id="transcriptForm" novalidate>
+      <div class="card">
 
-        <!-- ── Step 0: Interviewee Lookup (optional) ──────────────────────── -->
-        <div class="form-section">
-          <h3 class="form-section-title">
-            <span class="form-step form-step--muted">CSV</span>
-            Interviewee Lookup
-            <span class="form-section-optional">optional</span>
-          </h3>
-
-          <div class="file-drop csv-drop" id="csvDrop">
-            <input type="file" id="csvFile" accept=".csv" class="file-input" />
-            <div class="file-drop-label" id="csvDropLabel">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="3" width="14" height="14" rx="2"/>
-                <path d="M3 7h14M7 7v10"/>
-              </svg>
-              <span>Drop your <strong>RSS Contacts CSV</strong> here, or <span class="link">browse</span></span>
-            </div>
-          </div>
-
-          <div class="field-group" id="intervieweeGroup" hidden>
-            <label for="intervieweeSelect" class="label">Select Interviewee</label>
-            <select id="intervieweeSelect" class="input select-input">
-              <option value="">— choose interviewee —</option>
-            </select>
-          </div>
+        <div class="card-header">
+          <p class="card-eyebrow">Interview Processing</p>
+          <h1 class="card-title">Transcript Cleaning Tool</h1>
+          <p class="card-subtitle">
+            Upload a raw transcript, fill in the interview details, and get a
+            cleaned Word document with structured notes — in under two minutes.
+          </p>
         </div>
 
-        <!-- ── Step 1: Upload Transcript ─────────────────────────────────── -->
-        <div class="form-section">
-          <h3 class="form-section-title">
-            <span class="form-step">1</span>
-            Upload Transcript
-          </h3>
+        <form id="transcriptForm" novalidate>
 
-          <div class="field-group">
-            <label for="transcriptFile" class="label">
-              Transcript File <span class="required">*</span>
-            </label>
-            <div class="file-drop" id="fileDrop">
-              <input type="file" id="transcriptFile" accept=".txt" class="file-input" />
-              <div class="file-drop-label" id="fileDropLabel">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
-                  <path d="M3 14v1.5A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5V14"/>
+          <!-- ── Step 0: Interviewee Lookup (optional) ──────────────────── -->
+          <div class="form-section">
+            <h3 class="form-section-title">
+              <span class="form-step form-step--muted">CSV</span>
+              Interviewee Lookup
+              <span class="form-section-optional">optional</span>
+            </h3>
+
+            <div class="file-drop csv-drop" id="csvDrop">
+              <input type="file" id="csvFile" accept=".csv" class="file-input" />
+              <div class="file-drop-label" id="csvDropLabel">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="14" height="14" rx="2"/>
+                  <path d="M3 7h14M7 7v10"/>
                 </svg>
-                <span>Drop .txt file here or <span class="link">browse</span></span>
+                <span>Drop your <strong>RSS Contacts CSV</strong> here, or <span class="link">browse</span></span>
               </div>
             </div>
-            <p class="hint">Raw Granola export as a .txt file</p>
+
+            <div class="field-group" id="intervieweeGroup" hidden>
+              <label for="intervieweeSelect" class="label">Select Interviewee</label>
+              <select id="intervieweeSelect" class="input select-input">
+                <option value="">— choose interviewee —</option>
+              </select>
+            </div>
           </div>
 
-          <div class="field-group">
-            <label for="transcriptText" class="label">Or paste transcript text</label>
-            <textarea id="transcriptText" class="textarea-input" rows="9"
-                      placeholder="Paste raw transcript here — any format works…"></textarea>
+          <!-- ── Step 1: Upload Transcript ──────────────────────────────── -->
+          <div class="form-section">
+            <h3 class="form-section-title">
+              <span class="form-step">1</span>
+              Upload Transcript
+            </h3>
+
+            <div class="field-group">
+              <label for="transcriptFile" class="label">
+                Transcript File <span class="required">*</span>
+              </label>
+              <div class="file-drop" id="fileDrop">
+                <input type="file" id="transcriptFile" accept=".txt" class="file-input" />
+                <div class="file-drop-label" id="fileDropLabel">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M10 13V3M10 3L6.5 6.5M10 3l3.5 3.5"/>
+                    <path d="M3 14v1.5A1.5 1.5 0 004.5 17h11a1.5 1.5 0 001.5-1.5V14"/>
+                  </svg>
+                  <span>Drop .txt file here or <span class="link">browse</span></span>
+                </div>
+              </div>
+              <p class="hint">Raw Granola export as a .txt file</p>
+            </div>
+
+            <div class="field-group">
+              <label for="transcriptText" class="label">Or paste transcript text</label>
+              <textarea id="transcriptText" class="textarea-input" rows="9"
+                        placeholder="Paste raw transcript here — any format works…"></textarea>
+            </div>
           </div>
+
+          <!-- ── Step 2: Interview Details ──────────────────────────────── -->
+          <div class="form-section">
+            <h3 class="form-section-title">
+              <span class="form-step">2</span>
+              Interview Details
+            </h3>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="role" class="label">
+                  Interviewee Role <span class="required">*</span>
+                </label>
+                <input type="text" id="role" name="role" class="input"
+                       placeholder="e.g. Lab Director" autocomplete="off" />
+              </div>
+              <div class="field-group">
+                <label for="setting" class="label">
+                  Setting <span class="required">*</span>
+                </label>
+                <input type="text" id="setting" name="setting" class="input"
+                       placeholder="e.g. Core Lab, AMC" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="location" class="label">
+                  Location <span class="required">*</span>
+                </label>
+                <input type="text" id="location" name="location" class="input"
+                       placeholder="e.g. US" autocomplete="off" />
+              </div>
+              <div class="field-group">
+                <label for="interviewDate" class="label">Interview Date</label>
+                <input type="date" id="interviewDate" name="interviewDate" class="input" />
+              </div>
+            </div>
+
+            <div class="field-group field-group--narrow">
+              <label for="interviewNum" class="label">Interview Number</label>
+              <input type="text" id="interviewNum" name="interviewNum" class="input"
+                     placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- ── Submit ──────────────────────────────────────────────────── -->
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submitBtn">
+              <span class="btn-text">Generate Documents</span>
+              <span class="btn-spinner" hidden>
+                <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+                <span id="stageLabel">Processing…</span>
+              </span>
+            </button>
+            <p class="actions-hint">Typically takes 60–90 seconds</p>
+          </div>
+
+          <div id="statusBox" class="status-box" hidden></div>
+
+        </form>
+      </div>
+
+      <!-- ── Pipeline progress panel (shown during processing) ──────────── -->
+      <aside id="progressPanel" class="prog-panel" hidden>
+        <h3 class="prog-title">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="4" cy="5"  r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="10" r="1.5" fill="currentColor" stroke="none"/>
+            <circle cx="4" cy="15" r="1.5" fill="currentColor" stroke="none"/>
+            <path d="M8 5h9M8 10h9M8 15h9" stroke-linecap="round"/>
+          </svg>
+          Processing Pipeline
+        </h3>
+
+        <ol class="prog-steps">
+          <li class="prog-step prog-step--pending" id="step-parsing">
+            <span class="prog-step-icon"></span>
+            <div class="prog-step-body">
+              <span class="prog-step-name">Parse Transcript</span>
+              <span class="prog-step-meta" id="prog-meta-parsing">—</span>
+            </div>
+          </li>
+          <li class="prog-step prog-step--pending" id="step-cleaning">
+            <span class="prog-step-icon"></span>
+            <div class="prog-step-body">
+              <span class="prog-step-name">Clean Transcript</span>
+              <span class="prog-step-meta" id="prog-meta-cleaning">—</span>
+            </div>
+          </li>
+          <li class="prog-step prog-step--pending" id="step-notes">
+            <span class="prog-step-icon"></span>
+            <div class="prog-step-body">
+              <span class="prog-step-name">Generate Notes</span>
+              <span class="prog-step-meta" id="prog-meta-notes">—</span>
+            </div>
+          </li>
+          <li class="prog-step prog-step--pending" id="step-building">
+            <span class="prog-step-icon"></span>
+            <div class="prog-step-body">
+              <span class="prog-step-name">Build Documents</span>
+              <span class="prog-step-meta" id="prog-meta-building">—</span>
+            </div>
+          </li>
+        </ol>
+
+        <div class="prog-bar-wrap">
+          <div class="prog-bar-track">
+            <div class="prog-bar-fill" id="progBarFill" style="width:0%"></div>
+          </div>
+          <span class="prog-pct" id="progPct">0%</span>
         </div>
 
-        <!-- ── Step 2: Interview Details ─────────────────────────────────── -->
-        <div class="form-section">
-          <h3 class="form-section-title">
-            <span class="form-step">2</span>
-            Interview Details
-          </h3>
+        <p class="prog-elapsed" id="progElapsed">—</p>
+      </aside>
 
-          <div class="field-row">
-            <div class="field-group">
-              <label for="role" class="label">
-                Interviewee Role <span class="required">*</span>
-              </label>
-              <input type="text" id="role" name="role" class="input"
-                     placeholder="e.g. Lab Director" autocomplete="off" />
-            </div>
-            <div class="field-group">
-              <label for="setting" class="label">
-                Setting <span class="required">*</span>
-              </label>
-              <input type="text" id="setting" name="setting" class="input"
-                     placeholder="e.g. Core Lab, AMC" autocomplete="off" />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="location" class="label">
-                Location <span class="required">*</span>
-              </label>
-              <input type="text" id="location" name="location" class="input"
-                     placeholder="e.g. US" autocomplete="off" />
-            </div>
-            <div class="field-group">
-              <label for="interviewDate" class="label">Interview Date</label>
-              <input type="date" id="interviewDate" name="interviewDate" class="input" />
-            </div>
-          </div>
-
-          <div class="field-group field-group--narrow">
-            <label for="interviewNum" class="label">Interview Number</label>
-            <input type="text" id="interviewNum" name="interviewNum" class="input"
-                   placeholder="e.g. IV3  (auto-increments if blank)" autocomplete="off" />
-          </div>
-        </div>
-
-        <!-- ── Submit ─────────────────────────────────────────────────────── -->
-        <div class="form-actions">
-          <button type="submit" class="btn-primary" id="submitBtn">
-            <span class="btn-text">Generate Documents</span>
-            <span class="btn-spinner" hidden>
-              <svg class="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-              </svg>
-              <span id="stageLabel">Cleaning transcript…</span>
-            </span>
-          </button>
-          <p class="actions-hint">Typically takes 60–90 seconds</p>
-        </div>
-
-        <div id="statusBox" class="status-box" hidden></div>
-
-      </form>
-    </div>
+    </div><!-- /#processLayout -->
 
     <!-- ── Download results panel ──────────────────────────────────────── -->
     <div class="card card--downloads" id="downloadPanel" hidden>
@@ -183,6 +242,7 @@
       <pre class="cli-block" id="cliBlock"></pre>
       <button class="btn-copy" id="copyBtn" onclick="copyCmd()">Copy</button>
     </div>
+
   </main>
 
   <footer class="site-footer">

@@ -1,5 +1,6 @@
 """Step 3: LLM structured notes call (always Claude)."""
 
+import re
 from pathlib import Path
 import config
 
@@ -54,18 +55,18 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
         if not stripped:
             continue
 
-        # Check for section header match
+        # Strip optional leading number prefix so "1. Key Themes" → "Key Themes"
+        clean = re.sub(r'^\d+[\.\)]\s*', '', stripped)
+
+        # Section header: matches a known section name (not a bullet line)
         matched = None
-        for header in SECTION_HEADERS:
-            if stripped.lower().startswith(header.lower()):
-                # Confirm it's a header line (no bullet prefix, short line)
-                clean = stripped.lstrip("0123456789. ").strip()
-                if clean.lower().startswith(header.lower()):
+        if not stripped.startswith(("•", "-", "*")):
+            for header in SECTION_HEADERS:
+                if (clean.lower() == header.lower()
+                        or clean.lower().startswith(header.lower() + ':')):
                     matched = header
                     break
-                elif stripped.lower() == header.lower():
-                    matched = header
-                    break
+
         if matched:
             current_section = matched
             continue
@@ -73,13 +74,11 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
         if current_section is None:
             continue
 
-        # Quote line: starts with " or ' (supporting quote)
+        # Quote line: starts with " or " (supporting quote)
         if stripped.startswith('"') or stripped.startswith('\u201c'):
-            # Normalize: ensure it starts with a standard "
-            quote = stripped
-            sections[current_section].append(quote)
+            sections[current_section].append(stripped)
 
-        # Bullet line: starts with •, -, *, or digit
+        # Bullet line: starts with •, -, *
         elif stripped.startswith(("•", "-", "*")):
             text = stripped[1:].strip()
             if text:
@@ -89,7 +88,6 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
             if text:
                 sections[current_section].append(text)
         else:
-            # Plain continuation or inline quote for Notable Quotes section
             if stripped:
                 sections[current_section].append(stripped)
 

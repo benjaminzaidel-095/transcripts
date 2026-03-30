@@ -210,56 +210,126 @@ function normalizeDate(str) {
   return "";
 }
 
-// ── Progress stage labels ─────────────────────────────────────────────────────
-// Timings based on typical transcript length (haiku cleaning ~20s, sonnet notes ~45s)
-const STAGES = [
-  { ms:     0, label: "Cleaning transcript…",  detail: "Removing filler words, fixing grammar, and standardising speaker labels." },
-  { ms: 22000, label: "Generating notes…",      detail: "Extracting key themes, notable quotes, and competitive intelligence." },
-  { ms: 58000, label: "Building documents…",    detail: "Assembling the cleaned transcript and notes into formatted Word files." },
+// ── Pipeline steps ────────────────────────────────────────────────────────────
+const PIPELINE_STEPS = [
+  { id: "parsing",  label: "Parse Transcript", btnLabel: "Parsing transcript…",  pct: 5  },
+  { id: "cleaning", label: "Clean Transcript", btnLabel: "Cleaning transcript…", pct: 15 },
+  { id: "notes",    label: "Generate Notes",   btnLabel: "Generating notes…",    pct: 45 },
+  { id: "building", label: "Build Documents",  btnLabel: "Building documents…",  pct: 88 },
 ];
-let stageTimers = [];
-let _currentStage = 0;
 
-function startStages() {
-  stageTimers.forEach(clearTimeout);
-  stageTimers = [];
-  _currentStage = 0;
-  _showStage(0);                                   // Show stage 1 immediately
-  STAGES.slice(1).forEach((s, i) => {
-    stageTimers.push(setTimeout(() => _showStage(i + 1), s.ms));
-  });
+// ── Progress panel state ──────────────────────────────────────────────────────
+let _stepStartTimes  = {};
+let _currentStep     = null;
+let _processStart    = null;
+let _elapsedTimer    = null;
+
+function initProgressPanel() {
+  _stepStartTimes = {};
+  _currentStep    = null;
+  _processStart   = Date.now();
+
+  PIPELINE_STEPS.forEach(s => _setStepState(s.id, "pending", null));
+  _setBar(0);
+
+  const elapsed = document.getElementById("progElapsed");
+  if (elapsed) elapsed.textContent = "—";
+
+  clearInterval(_elapsedTimer);
+  _elapsedTimer = setInterval(_tickElapsed, 500);
 }
 
-function _showStage(idx) {
-  _currentStage = idx;
-  const s = STAGES[idx];
-  if (stageLabel) stageLabel.textContent = s.label;
+function _tickElapsed() {
+  if (!_processStart) return;
+  const totalSec = ((Date.now() - _processStart) / 1000).toFixed(1);
+  const el = document.getElementById("progElapsed");
+  if (el) el.textContent = `${totalSec}s elapsed`;
 
-  // Build dots HTML
-  const dots = STAGES.map((_, i) => {
-    const cls = i < idx ? "done" : i === idx ? "active" : "";
-    return `<span class="status-dot ${cls}"></span>`;
-  }).join("");
-
-  statusBox.innerHTML =
-    `<div class="status-stage">` +
-      `<span class="status-stage-label">` +
-        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">` +
-          `<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>` +
-        `</svg>` +
-        s.label +
-      `</span>` +
-      `<span class="status-stage-counter">Step ${idx + 1} of ${STAGES.length}</span>` +
-    `</div>` +
-    `<div class="status-stage-detail">${s.detail}</div>` +
-    `<div class="status-progress">${dots}</div>`;
-  statusBox.className = "status-box info";
-  statusBox.hidden = false;
+  // Live-update the active step's running time
+  if (_currentStep && _stepStartTimes[_currentStep]) {
+    const stepSec = ((Date.now() - _stepStartTimes[_currentStep]) / 1000).toFixed(1);
+    const meta = document.getElementById(`prog-meta-${_currentStep}`);
+    if (meta) meta.textContent = `${stepSec}s`;
+  }
 }
 
-function stopStages() {
-  stageTimers.forEach(clearTimeout);
-  stageTimers = [];
+function _setStepState(stepId, state, duration) {
+  const el = document.getElementById(`step-${stepId}`);
+  if (!el) return;
+  el.className = `prog-step prog-step--${state}`;
+  const meta = document.getElementById(`prog-meta-${stepId}`);
+  if (!meta) return;
+  if (state === "pending")               meta.textContent = "—";
+  else if (state === "done" && duration != null) meta.textContent = `${duration.toFixed(1)}s`;
+  else if (state === "error")            meta.textContent = "failed";
+}
+
+function _setBar(pct) {
+  const fill  = document.getElementById("progBarFill");
+  const label = document.getElementById("progPct");
+  if (fill)  fill.style.width    = `${pct}%`;
+  if (label) label.textContent   = `${pct}%`;
+}
+
+function _activateStep(stepId) {
+  // Complete the previously active step
+  if (_currentStep) {
+    const dur = (Date.now() - _stepStartTimes[_currentStep]) / 1000;
+    _setStepState(_currentStep, "done", dur);
+  }
+  _currentStep = stepId;
+  _stepStartTimes[stepId] = Date.now();
+  _setStepState(stepId, "active", null);
+
+  const step = PIPELINE_STEPS.find(s => s.id === stepId);
+  if (step) {
+    if (stageLabel) stageLabel.textContent = step.btnLabel;
+    _setBar(step.pct);
+  }
+}
+
+function showProgressPanel() {
+  document.getElementById("processLayout").classList.add("is-active");
+  document.getElementById("progressPanel").hidden = false;
+}
+
+// ── SSE event handler ─────────────────────────────────────────────────────────
+function handleSSEEvent(data) {
+  if (data.event === "stage") {
+    _activateStep(data.stage);
+
+  } else if (data.event === "done") {
+    // Mark last active step done
+    if (_currentStep) {
+      const dur = (Date.now() - _stepStartTimes[_currentStep]) / 1000;
+      _setStepState(_currentStep, "done", dur);
+      _currentStep = null;
+    }
+    _setBar(100);
+    clearInterval(_elapsedTimer);
+    const totalSec = ((Date.now() - _processStart) / 1000).toFixed(1);
+    const elapsed = document.getElementById("progElapsed");
+    if (elapsed) elapsed.textContent = `Done in ${totalSec}s`;
+
+    // Wire up download buttons
+    dlTranscript.onclick = () =>
+      downloadB64(data.transcript_b64, data.transcript_filename,
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    dlNotes.onclick = () =>
+      downloadB64(data.notes_b64, data.notes_filename,
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+    downloadPanel.hidden = false;
+    showStatus("✓ Processing complete — your files are ready below.", "success");
+
+  } else if (data.event === "error") {
+    if (_currentStep) {
+      _setStepState(_currentStep, "error", null);
+      _currentStep = null;
+    }
+    clearInterval(_elapsedTimer);
+    showStatus(`Error: ${data.detail}`, "error");
+  }
 }
 
 // ── Form submit ───────────────────────────────────────────────────────────────
@@ -282,6 +352,7 @@ form.addEventListener("submit", async e => {
   setLoading(true);
   downloadPanel.hidden = true;
   cliPanel.hidden = true;
+  hideStatus();
 
   if (API_ENDPOINT) {
     const fd = new FormData();
@@ -296,29 +367,41 @@ form.addEventListener("submit", async e => {
     if (date) fd.append("date", date);
     if (num)  fd.append("interview_num", num);
 
-    startStages();
+    showProgressPanel();
+    initProgressPanel();
+
     try {
       const res = await fetch(API_ENDPOINT, { method: "POST", body: fd });
       if (!res.ok) {
         const msg = await res.text().catch(() => res.statusText);
         throw new Error(msg || `HTTP ${res.status}`);
       }
-      const data = await res.json();
 
-      // Wire up the two download buttons
-      dlTranscript.onclick = () =>
-        downloadB64(data.transcript_b64, data.transcript_filename,
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-      dlNotes.onclick = () =>
-        downloadB64(data.notes_b64, data.notes_filename,
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      // Stream SSE events from the server
+      const reader = res.body.getReader();
+      const dec    = new TextDecoder();
+      let buf      = "";
 
-      downloadPanel.hidden = false;
-      showStatus("✓ Processing complete — your files are ready below.", "success");
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let pos;
+        while ((pos = buf.indexOf("\n\n")) !== -1) {
+          const chunk = buf.slice(0, pos).trim();
+          buf = buf.slice(pos + 2);
+          if (chunk.startsWith("data: ")) {
+            try { handleSSEEvent(JSON.parse(chunk.slice(6))); } catch (_) {}
+          }
+        }
+      }
+
     } catch (err) {
+      clearInterval(_elapsedTimer);
+      if (_currentStep) { _setStepState(_currentStep, "error", null); _currentStep = null; }
       showStatus(`Error: ${err.message}`, "error");
     } finally {
-      stopStages();
+      setLoading(false);
     }
 
   } else {
@@ -338,9 +421,8 @@ form.addEventListener("submit", async e => {
     cliBlock.textContent = cmd;
     cliPanel.hidden = false;
     showStatus("API not configured yet — copy the command below to run locally.", "info");
+    setLoading(false);
   }
-
-  setLoading(false);
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -351,7 +433,7 @@ function setLoading(on) {
   submitBtn.disabled = on;
   btnText.hidden     = on;
   btnSpinner.hidden  = !on;
-  if (on && stageLabel) stageLabel.textContent = STAGES[0].label;
+  if (on && stageLabel) stageLabel.textContent = "Processing…";
 }
 
 function showStatus(msg, type = "info") {
