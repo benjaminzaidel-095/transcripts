@@ -32,7 +32,7 @@ def generate_notes(cleaned_transcript: str) -> dict[str, list[str]]:
     client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
     message = client.messages.create(
         model=config.NOTES_MODEL,
-        max_tokens=8192,
+        max_tokens=16000,
         messages=[{"role": "user", "content": prompt}],
     )
     raw_notes = message.content[0].text.strip()
@@ -57,6 +57,9 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
 
         # Strip optional leading number prefix so "1. Key Themes" → "Key Themes"
         clean = re.sub(r'^\d+[\.\)]\s*', '', stripped)
+        # Strip markdown formatting so "**Key Themes**" or "## Key Themes" → "Key Themes"
+        clean = re.sub(r'^[#*_]+\s*', '', clean)
+        clean = re.sub(r'\s*[#*_]+$', '', clean).strip()
 
         # Section header: matches a known section name (not a bullet line)
         matched = None
