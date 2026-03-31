@@ -140,7 +140,7 @@ function populateIntervieweeDropdown(contacts) {
   intervieweeSelect.innerHTML = '<option value="">— choose interviewee —</option>';
 
   contacts.forEach((c, idx) => {
-    const ivNum   = (c["IV#"] || "").trim();
+    const ivNum   = (c["IV #"] || "").trim();
     const first   = (c["First name"] || "").trim();
     const last    = (c["Last name"] || "").trim();
     const role    = (c["Role"] || "").trim();
@@ -173,7 +173,7 @@ intervieweeSelect.addEventListener("change", () => {
   const contacts = intervieweeSelect._contacts || [];
   const c = contacts[parseInt(val, 10)];
   if (!c) return;
-  const ivNum = (c["IV#"] || "").trim();
+  const ivNum = (c["IV #"] || "").trim();
   setAutofill("interviewNum", ivNum ? "IV" + ivNum : "");
   setAutofill("role",         (c["Role"] || "").trim());
   setAutofill("setting",      (c["Setting"] || "").trim());
