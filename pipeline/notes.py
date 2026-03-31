@@ -61,14 +61,15 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
         clean = re.sub(r'^[#*_]+\s*', '', clean)
         clean = re.sub(r'\s*[#*_]+$', '', clean).strip()
 
-        # Section header: matches a known section name (not a bullet line)
+        # Section header check — must run BEFORE the bullet guard because Claude
+        # often emits "**Key Themes**" which starts with "*" and would otherwise
+        # be misidentified as a bullet, leaving current_section unset forever.
         matched = None
-        if not stripped.startswith(("•", "-", "*")):
-            for header in SECTION_HEADERS:
-                if (clean.lower() == header.lower()
-                        or clean.lower().startswith(header.lower() + ':')):
-                    matched = header
-                    break
+        for header in SECTION_HEADERS:
+            if (clean.lower() == header.lower()
+                    or clean.lower().startswith(header.lower() + ':')):
+                matched = header
+                break
 
         if matched:
             current_section = matched

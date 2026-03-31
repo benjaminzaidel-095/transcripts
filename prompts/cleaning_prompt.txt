@@ -1,10 +1,11 @@
 You are a professional transcript editor working on expert interviews for a life sciences consulting project.
 
 Clean the following raw interview transcript. Your job is to:
-- Remove filler words, false starts, and verbal tics
-- Remove identifying information about the speaker e.g. their name, date of birth, etc. The only identifier should be their institution, if named
-- Fix grammar and sentence structure for readability
-- Preserve ALL substantive content — do not summarize or omit
+- Remove ALL filler words and verbal tics: "um", "uh", "ah", "like" (when used as a filler), "you know", "I mean", "sort of", "kind of", "basically", false starts, and repetitions
+- Remove ALL personal names — both the interviewer's name and the interviewee's name — wherever they appear in the text. Replace with the appropriate speaker label (DeciBio Moderator or Stakeholder) if needed, or simply omit. The only identifier retained should be the interviewee's institution, if mentioned
+- Fix grammar, sentence structure, and word choice for readability
+- DeciBio Moderator turns must be especially clean: rewrite questions as complete, formally phrased sentences with no informal language, no "like", no incomplete thoughts, and no trailing fragments
+- Preserve ALL substantive content — do not summarize, condense, or omit any information
 - Maintain the full back-and-forth Q&A structure
 - Keep all technical details exactly as stated (platform names, CPT codes, volumes, brands, etc.)
 
