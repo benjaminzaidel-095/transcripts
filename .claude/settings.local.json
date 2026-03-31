@@ -21,7 +21,8 @@
       "Bash(python3 -c \"import fastapi, uvicorn\")",
       "Bash(python -c \"import fastapi, uvicorn\")",
       "Bash(python -c \"import server; print\\(''OK''\\)\")",
-      "Bash(python -m pip install python-multipart --quiet)"
+      "Bash(python -m pip install python-multipart --quiet)",
+      "Bash(python diagnose_notes.py)"
     ]
   }
 }

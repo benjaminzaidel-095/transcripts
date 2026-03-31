@@ -55,13 +55,16 @@ def _parse_notes(raw: str) -> dict[str, list[str]]:
         if not stripped:
             continue
 
-        # Strip optional leading number prefix so "1. Key Themes" → "Key Themes"
-        clean = re.sub(r'^\d+[\.\)]\s*', '', stripped)
-        # Strip markdown formatting so "**Key Themes**" or "## Key Themes" → "Key Themes"
-        clean = re.sub(r'^[#*_]+\s*', '', clean)
-        clean = re.sub(r'\s*[#*_]+$', '', clean).strip()
+        # Normalise the line so all Claude formatting variants resolve to bare text.
+        # Order matters: strip numbers → strip markdown → strip numbers again.
+        # This handles: "1. Key Themes", "**Key Themes**", "**1. Key Themes**",
+        # "1. **Key Themes**", "## 1. Key Themes", etc.
+        clean = re.sub(r'^\d+[\.\)]\s*', '', stripped)   # "1. Key Themes" → "Key Themes"
+        clean = re.sub(r'^[#*_]+\s*', '', clean)          # "**Key Themes**" → "Key Themes**"
+        clean = re.sub(r'\s*[#*_]+$', '', clean).strip()  # "Key Themes**"  → "Key Themes"
+        clean = re.sub(r'^\d+[\.\)]\s*', '', clean)       # "1. Key Themes" → "Key Themes" (second pass after ** strip)
 
-        # Section header check — must run BEFORE the bullet guard because Claude
+        # Section header check — must run BEFORE any bullet guard because Claude
         # often emits "**Key Themes**" which starts with "*" and would otherwise
         # be misidentified as a bullet, leaving current_section unset forever.
         matched = None

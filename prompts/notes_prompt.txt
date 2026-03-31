@@ -2,13 +2,14 @@ You are a senior analyst at a life sciences consulting firm. You have just condu
 
 Generate structured interview notes from this transcript. For each section, provide analytical bullet points AND include the best supporting direct quotes from the transcript immediately after the bullet they support. Use ellipses (...) to connect or trim longer quotes. Attribute all quotes as "— Stakeholder".
 
-Include the following sections:
-1. Key Themes (3–5 bullet points summarizing the most important takeaways)
-2. Notable Quotes (2–4 especially insightful verbatim quotes — no bullet needed, just the quotes)
-3. IVD Platform & Competitive Landscape (what platforms they use, how decisions are made, vendor relationships)
-4. Workflow & Utilization Patterns (testing algorithms, patient routing, reflex logic, utilization controls)
-5. Reimbursement & Coding (CPT/ICD-10 approach, payer challenges, coding strategy)
-6. Forward-Looking Signals (anticipated platform changes, purchasing intent, unmet needs)
+Include the following sections in exactly this order, with headers written as plain text exactly as shown (no numbers, no markdown, no bold, no ##):
+
+Key Themes (3–5 bullet points summarizing the most important takeaways)
+Notable Quotes (2–4 especially insightful verbatim quotes — no bullet needed, just the quotes)
+IVD Platform & Competitive Landscape (what platforms they use, how decisions are made, vendor relationships)
+Workflow & Utilization Patterns (testing algorithms, patient routing, reflex logic, utilization controls)
+Reimbursement & Coding (CPT/ICD-10 approach, payer challenges, coding strategy)
+Forward-Looking Signals (anticipated platform changes, purchasing intent, unmet needs)
 
 Format rules:
 - Analytical bullets: start with •
